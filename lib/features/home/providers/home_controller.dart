@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import '../../../core/errors/app_exception.dart';
 import '../../auth/models/auth_user.dart';
+import '../../wallet/models/wallet_summary.dart';
 import '../../wallet/services/wallet_service.dart';
 import '../models/home_dashboard_data.dart';
 import 'home_state.dart';
@@ -30,15 +31,21 @@ class HomeController extends ChangeNotifier {
     );
     notifyListeners();
     final previous = state.data;
-    Object? wallet = previous?.wallet;
+    WalletSummary? wallet = previous?.wallet;
     var transactions = previous?.transactions ?? const [];
     String? walletMessage;
     String? transactionsMessage;
     try {
       try {
         wallet = await _service.getWalletSummary(cancelToken: _cancel);
-      } on AppException {
+      } on AppException catch (error) {
         walletMessage = 'Your point balance could not be refreshed.';
+        if (error is NetworkException && previous == null) {
+          walletMessage =
+              'Cannot reach the E-KOLEK server. Check your connection and try again.';
+        }
+      } on FormatException {
+        walletMessage = 'The wallet response could not be read.';
       }
       try {
         final page = await _service.getPointTransactions(
@@ -48,16 +55,15 @@ class HomeController extends ChangeNotifier {
         transactions = page.items;
       } on AppException {
         transactionsMessage = 'Recent point activity could not be refreshed.';
-      }
-      if (wallet == null) {
-        throw const InvalidResponseException();
+      } on FormatException {
+        transactionsMessage = 'Recent point activity could not be read.';
       }
       state = HomeState(
         phase: HomePhase.loaded,
         data: HomeDashboardData(
           userId: user.id,
           displayName: user.fullName,
-          wallet: wallet as dynamic,
+          wallet: wallet,
           transactions: transactions,
           refreshedAt: DateTime.now().toUtc(),
         ),

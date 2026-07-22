@@ -77,13 +77,13 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                         Icons.account_balance_wallet_outlined,
                       ),
                       title: Text(
-                        ref.watch(homeStateProvider).data == null
+                        ref.watch(homeStateProvider).data?.wallet == null
                             ? 'Wallet balance unavailable'
                             : AppFormatters.rewardPoints(
                                 ref
                                     .watch(homeStateProvider)
                                     .data!
-                                    .wallet
+                                    .wallet!
                                     .currentBalance,
                               ),
                       ),

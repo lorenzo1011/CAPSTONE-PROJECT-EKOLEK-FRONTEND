@@ -21,7 +21,7 @@ A physical device must use the development computer's reachable LAN IP, for
 example:
 
 ```powershell
-flutter run --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://192.168.1.100:8000/api/
+flutter run --dart-define=APP_ENV=development --dart-define=API_BASE_URL=http://192.168.1.11:8000/api/
 ```
 
 The example LAN address is not a permanent project value. Replace it with the

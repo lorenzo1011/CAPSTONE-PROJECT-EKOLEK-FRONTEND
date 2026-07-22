@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
-import '../../../core/widgets/app_error_view.dart';
 import '../../../shared/providers/auth_providers.dart';
 import '../../../shared/providers/home_providers.dart';
 import '../../../shared/providers/challenges_providers.dart';
@@ -74,36 +73,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body = _isAutomatedTest
           ? const SizedBox.shrink()
           : const HomeDashboardSkeleton();
-    } else if (s.data == null) {
-      body = AppErrorView(
-        title: 'Wallet unavailable',
-        message:
-            s.message ??
-            'Your wallet information could not be loaded. Please try again.',
-        onRetry: refresh,
-      );
-    } else if (u == null || s.data!.userId != u.id) {
+    } else if (s.data == null || u == null || s.data!.userId != u.id) {
       body = const HomeDashboardSkeleton();
     } else {
       final d = s.data!;
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(
-            '${AppFormatters.greeting(DateTime.now())}${d.displayName == null ? '' : ', ${d.displayName}'}',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              tooltip: 'Notifications',
-              onPressed: () => context.push(AppRoutes.notificationsPath),
-              icon: Badge(
-                label: Text('${ref.watch(unreadNotificationCountProvider)}'),
-                isLabelVisible: ref.watch(unreadNotificationCountProvider) > 0,
-                child: const Icon(Icons.notifications_outlined),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${AppFormatters.greeting(DateTime.now())}${d.displayName == null ? '' : ', ${d.displayName}'}',
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      'Here is your environmental impact today.',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
+                ),
               ),
-            ),
+              IconButton.filledTonal(
+                tooltip: 'Notifications',
+                onPressed: () => context.push(AppRoutes.notificationsPath),
+                icon: Badge(
+                  label: Text('${ref.watch(unreadNotificationCountProvider)}'),
+                  isLabelVisible:
+                      ref.watch(unreadNotificationCountProvider) > 0,
+                  child: const Icon(Icons.notifications_outlined),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.md),
           if (s.stale)
@@ -113,8 +119,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 title: Text('Showing your last loaded wallet information.'),
               ),
             ),
-          WalletSummaryCard(wallet: d.wallet),
-          if (s.walletMessage != null)
+          if (d.wallet != null)
+            WalletSummaryCard(wallet: d.wallet!)
+          else
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                child: Column(
+                  children: [
+                    const Icon(Icons.account_balance_wallet_outlined, size: 36),
+                    const SizedBox(height: AppSpacing.sm),
+                    Text(
+                      'Wallet temporarily unavailable',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      s.walletMessage ??
+                          'Your point balance could not be loaded right now.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    FilledButton.tonalIcon(
+                      onPressed: s.busy ? null : refresh,
+                      icon: const Icon(Icons.refresh_rounded),
+                      label: const Text('Try again'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          if (d.wallet != null && s.walletMessage != null)
             ListTile(
               leading: const Icon(Icons.info_outline_rounded),
               title: Text(s.walletMessage!),
