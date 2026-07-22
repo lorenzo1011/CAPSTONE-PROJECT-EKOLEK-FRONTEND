@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/adaptive_page_scaffold.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/app_offline_view.dart';
+import '../../../core/widgets/app_section_header.dart';
 import '../../../shared/providers/games_providers.dart';
 import '../providers/games_state.dart';
 import '../widgets/game_card.dart';
@@ -34,8 +36,9 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
     final controller = ref.watch(gamesControllerProvider);
     final state = controller.state;
     return AdaptivePageScaffold(
-      title: 'Games',
-      subtitle: 'Play, learn, and earn responsibly',
+      title: 'Eco arcade',
+      subtitle:
+          'Quick challenges that reinforce sustainable choices and reward consistent learning.',
       body: _body(controller, state),
     );
   }
@@ -73,29 +76,86 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
             child: Column(
               children: [
                 if (state.isStale)
-                  const ListTile(
-                    leading: Icon(Icons.cloud_off_rounded),
-                    title: Text('Showing previously loaded game information.'),
-                  ),
-                if (state.dailyProgress != null)
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.today_rounded),
-                      title: Text(
-                        '${state.dailyProgress!.totalPointsEarned} game points earned today',
-                      ),
-                      subtitle: Text(
-                        '${state.dailyProgress!.totalPlays} verified plays',
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                    child: AppCard(
+                      child: const ListTile(
+                        leading: Icon(Icons.cloud_off_rounded),
+                        title: Text(
+                          'Showing previously loaded game information.',
+                        ),
                       ),
                     ),
                   ),
-                if (state.dailyMessage != null)
-                  ListTile(
-                    leading: const Icon(Icons.info_outline_rounded),
-                    title: Text(state.dailyMessage!),
+                if (state.dailyProgress != null)
+                  AppCard(
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.secondaryContainer,
+                    borderColor: Theme.of(
+                      context,
+                    ).colorScheme.secondaryContainer,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.local_fire_department_outlined,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
+                          size: 34,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${state.dailyProgress!.totalPointsEarned} points earned today',
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSecondaryContainer,
+                                    ),
+                              ),
+                              const SizedBox(height: AppSpacing.xs),
+                              Text(
+                                '${state.dailyProgress!.totalPlays} verified plays · Keep your momentum going',
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSecondaryContainer,
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.arrow_forward_rounded),
+                      ],
+                    ),
                   ),
+                if (state.dailyMessage != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: ListTile(
+                      leading: const Icon(Icons.info_outline_rounded),
+                      title: Text(state.dailyMessage!),
+                    ),
+                  ),
+                const SizedBox(height: AppSpacing.section),
+                const AppSectionHeader(
+                  title: 'Recent activity',
+                  subtitle: 'Your latest validated game sessions.',
+                ),
+                const SizedBox(height: AppSpacing.smMd),
                 RecentGameActivity(attempts: state.recentAttempts),
-                const SizedBox(height: AppSpacing.md),
+                const SizedBox(height: AppSpacing.section),
+                AppSectionHeader(
+                  title: 'Choose a game',
+                  subtitle: '${state.games.length} activities available now.',
+                ),
+                const SizedBox(height: AppSpacing.smMd),
               ],
             ),
           ),

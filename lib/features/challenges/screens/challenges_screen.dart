@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/adaptive_page_scaffold.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/app_offline_view.dart';
@@ -38,20 +39,26 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen> {
     if (state.items.isEmpty &&
         (state.phase == ChallengesPhase.initial ||
             state.phase == ChallengesPhase.loading)) {
-      return const Scaffold(
-        appBar: _ChallengesAppBar(),
+      return const AdaptivePageScaffold(
+        title: 'Eco challenges',
+        subtitle:
+            'Join time-bound community goals and track verified progress.',
         body: ChallengesScreenSkeleton(),
       );
     }
     if (state.items.isEmpty && state.phase == ChallengesPhase.offline) {
-      return Scaffold(
-        appBar: const _ChallengesAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Eco challenges',
+        subtitle:
+            'Join time-bound community goals and track verified progress.',
         body: AppOfflineView(onRetry: controller.load),
       );
     }
     if (state.items.isEmpty && state.phase == ChallengesPhase.failure) {
-      return Scaffold(
-        appBar: const _ChallengesAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Eco challenges',
+        subtitle:
+            'Join time-bound community goals and track verified progress.',
         body: AppErrorView(
           title: 'Challenges unavailable',
           message: state.message!,
@@ -71,8 +78,9 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen> {
           },
         )
         .toList(growable: false);
-    return Scaffold(
-      appBar: const _ChallengesAppBar(),
+    return AdaptivePageScaffold(
+      title: 'Eco challenges',
+      subtitle: 'Join time-bound community goals and track verified progress.',
       body: RefreshIndicator(
         onRefresh: () => controller.load(refresh: true),
         child: CustomScrollView(
@@ -89,7 +97,6 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Take part in verified environmental goals.'),
                     if (state.isStale)
                       const Card(
                         child: ListTile(
@@ -181,13 +188,4 @@ class _ChallengesScreenState extends ConsumerState<ChallengesScreen> {
       ),
     );
   }
-}
-
-class _ChallengesAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _ChallengesAppBar();
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-  @override
-  Widget build(BuildContext context) =>
-      AppBar(title: const Text('Eco Challenges'));
 }

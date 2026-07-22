@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/adaptive_page_scaffold.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/app_offline_view.dart';
@@ -37,20 +38,26 @@ class _NotificationCenterScreenState
           NotificationsPhase.initial,
           NotificationsPhase.loading,
         }.contains(state.phase)) {
-      return const Scaffold(
-        appBar: _NotificationAppBar(),
+      return const AdaptivePageScaffold(
+        title: 'Notification center',
+        subtitle:
+            'Verified announcements, account updates, and activity reminders.',
         body: NotificationCenterSkeleton(),
       );
     }
     if (state.items.isEmpty && state.phase == NotificationsPhase.offline) {
-      return Scaffold(
-        appBar: const _NotificationAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Notification center',
+        subtitle:
+            'Verified announcements, account updates, and activity reminders.',
         body: AppOfflineView(onRetry: controller.load),
       );
     }
     if (state.items.isEmpty && state.phase == NotificationsPhase.failure) {
-      return Scaffold(
-        appBar: const _NotificationAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Notification center',
+        subtitle:
+            'Verified announcements, account updates, and activity reminders.',
         body: AppErrorView(
           title: 'Notifications unavailable',
           message: state.message!,
@@ -58,12 +65,27 @@ class _NotificationCenterScreenState
         ),
       );
     }
-    return Scaffold(
-      appBar: _NotificationAppBar(
-        unreadCount: state.unreadCount,
-        busy: state.phase == NotificationsPhase.updating,
-        onMarkAll: controller.markAllRead,
-      ),
+    return AdaptivePageScaffold(
+      title: state.unreadCount > 0
+          ? 'Notification center (${state.unreadCount})'
+          : 'Notification center',
+      subtitle:
+          'Verified announcements, account updates, and activity reminders.',
+      actions: [
+        TextButton.icon(
+          onPressed:
+              state.unreadCount == 0 ||
+                  state.phase == NotificationsPhase.updating
+              ? null
+              : controller.markAllRead,
+          icon: const Icon(Icons.done_all_rounded),
+          label: Text(
+            state.phase == NotificationsPhase.updating
+                ? 'Updating…'
+                : 'Mark all read',
+          ),
+        ),
+      ],
       body: RefreshIndicator(
         onRefresh: () => controller.load(refresh: true),
         child: CustomScrollView(
@@ -148,30 +170,4 @@ class _NotificationCenterScreenState
       ),
     );
   }
-}
-
-class _NotificationAppBar extends StatelessWidget
-    implements PreferredSizeWidget {
-  const _NotificationAppBar({
-    this.unreadCount = 0,
-    this.busy = false,
-    this.onMarkAll,
-  });
-  final int unreadCount;
-  final bool busy;
-  final VoidCallback? onMarkAll;
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-  @override
-  Widget build(BuildContext context) => AppBar(
-    title: Text(
-      unreadCount > 0 ? 'Notifications ($unreadCount)' : 'Notifications',
-    ),
-    actions: [
-      TextButton(
-        onPressed: unreadCount == 0 || busy ? null : onMarkAll,
-        child: Text(busy ? 'Updating…' : 'Mark all read'),
-      ),
-    ],
-  );
 }

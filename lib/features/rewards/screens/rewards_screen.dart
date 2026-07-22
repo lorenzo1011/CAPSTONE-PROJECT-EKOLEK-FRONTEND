@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
+import '../../../app/theme/app_layout.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
+import '../../../core/widgets/app_page_header.dart';
+import '../../../core/widgets/app_search_field.dart';
 import '../../../shared/providers/home_providers.dart';
 import '../../../shared/providers/rewards_providers.dart';
 import '../providers/rewards_state.dart';
@@ -43,122 +47,155 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
     final state = ref.watch(rewardsStateProvider);
     final controller = ref.read(rewardsControllerProvider);
     Future<void> refresh() => controller.load(refresh: true);
+    final wallet = ref.watch(homeStateProvider).data?.wallet;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Rewards'),
-        actions: [
-          IconButton(
-            tooltip: 'Redemption requests',
-            onPressed: () => context.push(AppRoutes.redemptionHistoryPath),
-            icon: const Icon(Icons.receipt_long_outlined),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: refresh,
-        child: CustomScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: AppSpacing.screenPadding,
-              sliver: SliverList.list(
-                children: [
-                  Text(
-                    'Turn your points into useful rewards',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const Text(
-                    'Use your verified E-KOLEK points during authorized reward distribution activities.',
-                  ),
-                  const SizedBox(height: 12),
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(
-                        Icons.account_balance_wallet_outlined,
-                      ),
-                      title: Text(
-                        ref.watch(homeStateProvider).data?.wallet == null
-                            ? 'Wallet balance unavailable'
-                            : AppFormatters.rewardPoints(
-                                ref
-                                    .watch(homeStateProvider)
-                                    .data!
-                                    .wallet!
-                                    .currentBalance,
-                              ),
-                      ),
-                      subtitle: const Text(
-                        'Final points and eligibility are rechecked before redemption.',
-                      ),
-                      trailing: TextButton(
-                        onPressed: () =>
-                            context.push(AppRoutes.walletActivityPath),
-                        child: const Text('Activity'),
-                      ),
-                    ),
-                  ),
-                  if (state.stale)
-                    const Card(
-                      child: ListTile(
-                        leading: Icon(Icons.cloud_off_rounded),
-                        title: Text(
-                          'Showing the last reward information loaded on this device. Stock and eligibility may have changed.',
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: refresh,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.xl,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
+                sliver: SliverList.list(
+                  children: [
+                    AppPageHeader(
+                      eyebrow: 'Rewards marketplace',
+                      title: 'Turn impact into value',
+                      subtitle:
+                          'Redeem verified E-KOLEK points for useful community rewards and local benefits.',
+                      actions: [
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              context.push(AppRoutes.redemptionHistoryPath),
+                          icon: const Icon(Icons.receipt_long_outlined),
+                          label: const Text('My requests'),
                         ),
-                      ),
+                      ],
                     ),
-                  TextField(
-                    controller: search,
-                    textInputAction: TextInputAction.search,
-                    decoration: InputDecoration(
-                      labelText: 'Search rewards',
-                      prefixIcon: const Icon(Icons.search_rounded),
-                      suffixIcon: IconButton(
-                        tooltip: 'Clear search',
-                        onPressed: () {
-                          search.clear();
-                          controller.search('');
-                        },
-                        icon: const Icon(Icons.clear_rounded),
-                      ),
-                    ),
-                    onSubmitted: controller.search,
-                  ),
-                  if (state.categories.isNotEmpty)
-                    SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
+                    const SizedBox(height: AppSpacing.xl),
+                    AppCard(
+                      backgroundColor: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer,
+                      borderColor: Theme.of(
+                        context,
+                      ).colorScheme.primaryContainer,
                       child: Row(
                         children: [
-                          FilterChip(
-                            label: const Text('All'),
-                            selected: state.selectedCategory == null,
-                            onSelected: (_) => controller.selectCategory(null),
-                          ),
-                          ...state.categories.map(
-                            (category) => Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: FilterChip(
-                                label: Text(category.name),
-                                selected:
-                                    state.selectedCategory == category.name,
-                                onSelected: (_) =>
-                                    controller.selectCategory(category.name),
-                              ),
+                          Container(
+                            padding: const EdgeInsets.all(AppSpacing.smMd),
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              shape: BoxShape.circle,
                             ),
+                            child: Icon(
+                              Icons.account_balance_wallet_outlined,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  wallet == null
+                                      ? 'Wallet balance unavailable'
+                                      : AppFormatters.rewardPoints(
+                                          wallet.currentBalance,
+                                        ),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineSmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer,
+                                      ),
+                                ),
+                                Text(
+                                  'Available to spend · Eligibility is rechecked at checkout',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            tooltip: 'Wallet activity',
+                            onPressed: () =>
+                                context.push(AppRoutes.walletActivityPath),
+                            icon: const Icon(Icons.arrow_forward_rounded),
                           ),
                         ],
                       ),
                     ),
-                  if (state.message != null)
-                    ListTile(
-                      leading: const Icon(Icons.info_outline_rounded),
-                      title: Text(state.message!),
+                    if (state.stale)
+                      const Card(
+                        child: ListTile(
+                          leading: Icon(Icons.cloud_off_rounded),
+                          title: Text(
+                            'Showing the last reward information loaded on this device. Stock and eligibility may have changed.',
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: AppSpacing.lg),
+                    AppSearchField(
+                      controller: search,
+                      hintText: 'Search rewards',
+                      onSubmitted: controller.search,
+                      onClear: () => controller.search(''),
                     ),
-                  const SizedBox(height: 12),
-                ],
+                    if (state.categories.isNotEmpty) ...[
+                      const SizedBox(height: AppSpacing.smMd),
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            FilterChip(
+                              label: const Text('All'),
+                              selected: state.selectedCategory == null,
+                              onSelected: (_) =>
+                                  controller.selectCategory(null),
+                            ),
+                            ...state.categories.map(
+                              (category) => Padding(
+                                padding: const EdgeInsets.only(left: 8),
+                                child: FilterChip(
+                                  label: Text(category.name),
+                                  selected:
+                                      state.selectedCategory == category.name,
+                                  onSelected: (_) =>
+                                      controller.selectCategory(category.name),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                    if (state.message != null)
+                      ListTile(
+                        leading: const Icon(Icons.info_outline_rounded),
+                        title: Text(state.message!),
+                      ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                ),
               ),
-            ),
-            _catalog(context, state, controller, refresh),
-          ],
+              _catalog(context, state, controller, refresh),
+            ],
+          ),
         ),
       ),
     );
@@ -221,11 +258,16 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
       );
     }
     return SliverPadding(
-      padding: AppSpacing.screenPadding,
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.xxl,
+      ),
       sliver: SliverLayoutBuilder(
         builder: (context, constraints) {
           final width = constraints.crossAxisExtent;
-          final columns = width >= 1000
+          final columns = width >= AppLayout.wideBreakpoint
               ? 4
               : width >= 650
               ? 3

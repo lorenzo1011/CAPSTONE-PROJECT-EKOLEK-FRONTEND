@@ -7,6 +7,7 @@ import '../shared/providers/core_providers.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_layout.dart';
 import 'theme/app_motion.dart';
+import 'theme/app_radius.dart';
 import 'theme/app_spacing.dart';
 import 'theme/app_text_styles.dart';
 
@@ -18,11 +19,19 @@ class AppShell extends ConsumerWidget {
   static const double tabletBreakpoint = AppLayout.tabletBreakpoint;
 
   static const _destinations = [
-    _AppDestination('Home', Icons.home_rounded),
-    _AppDestination('Learn', Icons.menu_book_rounded),
-    _AppDestination('Games', Icons.sports_esports_rounded),
-    _AppDestination('Rewards', Icons.card_giftcard_rounded),
-    _AppDestination('Profile', Icons.person_rounded),
+    _AppDestination('Home', Icons.home_outlined, Icons.home_rounded),
+    _AppDestination(
+      'Learn',
+      Icons.auto_stories_outlined,
+      Icons.auto_stories_rounded,
+    ),
+    _AppDestination('Games', Icons.extension_outlined, Icons.extension_rounded),
+    _AppDestination('Rewards', Icons.redeem_outlined, Icons.redeem_rounded),
+    _AppDestination(
+      'Profile',
+      Icons.person_outline_rounded,
+      Icons.person_rounded,
+    ),
   ];
 
   void _selectDestination(int index) {
@@ -52,6 +61,7 @@ class AppShell extends ConsumerWidget {
           );
         }
 
+        final scheme = Theme.of(context).colorScheme;
         return Scaffold(
           body: Column(
             children: [
@@ -61,18 +71,42 @@ class AppShell extends ConsumerWidget {
           ),
           bottomNavigationBar: SafeArea(
             top: false,
-            child: NavigationBar(
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: _selectDestination,
-              destinations: _destinations
-                  .map(
-                    (destination) => NavigationDestination(
-                      icon: Icon(destination.icon),
-                      label: destination.label,
-                      tooltip: destination.label,
-                    ),
-                  )
-                  .toList(),
+            minimum: const EdgeInsets.fromLTRB(
+              AppSpacing.sm,
+              0,
+              AppSpacing.sm,
+              AppSpacing.sm,
+            ),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                borderRadius: AppRadius.largeBorderRadius,
+                border: Border.all(color: scheme.outlineVariant),
+                boxShadow: const [
+                  BoxShadow(
+                    color: AppColors.cardShadow,
+                    blurRadius: 24,
+                    offset: Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: AppRadius.largeBorderRadius,
+                child: NavigationBar(
+                  selectedIndex: navigationShell.currentIndex,
+                  onDestinationSelected: _selectDestination,
+                  destinations: _destinations
+                      .map(
+                        (destination) => NavigationDestination(
+                          icon: Icon(destination.icon),
+                          selectedIcon: Icon(destination.selectedIcon),
+                          label: destination.label,
+                          tooltip: destination.label,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
             ),
           ),
         );
@@ -94,54 +128,76 @@ class _TabletShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final extended =
+        MediaQuery.sizeOf(context).width >= AppLayout.wideBreakpoint;
     return Scaffold(
       body: SafeArea(
         child: Row(
           children: [
-            NavigationRail(
-              extended: true,
-              minExtendedWidth: AppLayout.navigationRailWidth,
-              selectedIndex: navigationShell.currentIndex,
-              onDestinationSelected: onDestinationSelected,
-              leading: const Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.md,
-                  AppSpacing.lg,
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.recycling_rounded,
-                      color: AppColors.primary,
-                      size: 32,
-                    ),
-                    SizedBox(width: AppSpacing.sm),
-                    Flexible(
-                      child: Text(
-                        'E-KOLEK',
-                        overflow: TextOverflow.ellipsis,
-                        style: AppTextStyles.titleLarge,
-                      ),
-                    ),
-                  ],
-                ),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.surface,
+                border: Border(right: BorderSide(color: scheme.outlineVariant)),
               ),
-              destinations: AppShell._destinations
-                  .map(
-                    (destination) => NavigationRailDestination(
-                      icon: Icon(destination.icon),
-                      label: Text(destination.label),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppSpacing.xs,
+              child: NavigationRail(
+                extended: extended,
+                minWidth: AppLayout.compactNavigationRailWidth,
+                minExtendedWidth: AppLayout.navigationRailWidth,
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: onDestinationSelected,
+                groupAlignment: -0.7,
+                leading: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.md,
+                    AppSpacing.xl,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: scheme.primary,
+                          borderRadius: AppRadius.mediumBorderRadius,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(AppSpacing.sm),
+                          child: Icon(
+                            Icons.recycling_rounded,
+                            color: scheme.onPrimary,
+                            size: 26,
+                          ),
+                        ),
                       ),
-                    ),
-                  )
-                  .toList(),
+                      if (extended) ...[
+                        const SizedBox(width: AppSpacing.smMd),
+                        const Flexible(
+                          child: Text(
+                            'E-KOLEK',
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTextStyles.titleLarge,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                destinations: AppShell._destinations
+                    .map(
+                      (destination) => NavigationRailDestination(
+                        icon: Icon(destination.icon),
+                        selectedIcon: Icon(destination.selectedIcon),
+                        label: Text(destination.label),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: AppSpacing.xs,
+                        ),
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
-            const VerticalDivider(width: 1),
             Expanded(
               child: Column(
                 children: [
@@ -216,8 +272,9 @@ class _OfflineBanner extends StatelessWidget {
 }
 
 class _AppDestination {
-  const _AppDestination(this.label, this.icon);
+  const _AppDestination(this.label, this.icon, this.selectedIcon);
 
   final String label;
   final IconData icon;
+  final IconData selectedIcon;
 }

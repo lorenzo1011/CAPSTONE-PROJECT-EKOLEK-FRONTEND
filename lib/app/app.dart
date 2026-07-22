@@ -16,6 +16,8 @@ class EkolekApp extends ConsumerWidget {
       title: 'E-KOLEK',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
       routerConfig: router ?? ref.watch(appRouterProvider),
     );
   }

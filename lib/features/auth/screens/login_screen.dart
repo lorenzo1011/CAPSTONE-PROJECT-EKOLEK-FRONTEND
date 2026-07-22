@@ -9,6 +9,7 @@ import '../../../app/theme/app_spacing.dart';
 import '../../../app/theme/app_text_styles.dart';
 import '../../../core/services/connectivity_service.dart';
 import '../../../core/utils/validators.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../shared/providers/auth_providers.dart';
 import '../../../shared/providers/core_providers.dart';
 import '../models/login_request.dart';
@@ -91,14 +92,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     final disabled = state.isSubmitting;
 
     return Scaffold(
-      body: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [AppColors.background, AppColors.loginBackground],
-          ),
-        ),
+      body: ColoredBox(
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: SafeArea(
           child: LayoutBuilder(
             builder: (context, constraints) {
@@ -136,10 +131,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   maxWidth: 980,
                                 ),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
-                                    const Expanded(child: _BrandPanel()),
+                                    const Expanded(
+                                      flex: 11,
+                                      child: _BrandPanel(),
+                                    ),
                                     const SizedBox(width: AppSpacing.xl),
-                                    Expanded(child: form),
+                                    Expanded(
+                                      flex: 10,
+                                      child: Center(child: form),
+                                    ),
                                   ],
                                 ),
                               )
@@ -200,119 +202,129 @@ class _LoginForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        child: AutofillGroup(
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text('Resident Login', style: AppTextStyles.headingMedium),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Sign in to access your E-KOLEK resident account.',
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+    return AppCard(
+      elevated: true,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      child: AutofillGroup(
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text('Welcome back', style: AppTextStyles.headingMedium),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Sign in securely to continue your E-KOLEK journey.',
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: AppColors.textSecondary,
                 ),
-                if (isOffline || state.message != null) ...[
-                  const SizedBox(height: AppSpacing.md),
-                  _InlineNotice(
-                    message: isOffline
-                        ? 'You appear to be offline. Check your connection and try again.'
-                        : state.message!,
-                    warning: isOffline,
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.lg),
-                TextFormField(
-                  controller: emailController,
-                  focusNode: emailFocus,
-                  enabled: !disabled,
-                  keyboardType: TextInputType.emailAddress,
-                  textInputAction: TextInputAction.next,
-                  autofillHints: const [AutofillHints.email],
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    labelText: 'Email address',
-                    prefixIcon: const Icon(Icons.email_outlined),
-                    errorText: _fieldError('email'),
-                  ),
-                  validator: Validators.email,
-                  onFieldSubmitted: (_) => passwordFocus.requestFocus(),
-                ),
+              ),
+              if (isOffline || state.message != null) ...[
                 const SizedBox(height: AppSpacing.md),
-                TextFormField(
-                  controller: passwordController,
-                  focusNode: passwordFocus,
-                  enabled: !disabled,
-                  obscureText: obscurePassword,
-                  textInputAction: TextInputAction.done,
-                  autofillHints: const [AutofillHints.password],
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock_outline_rounded),
-                    errorText: _fieldError('password'),
-                    suffixIcon: IconButton(
-                      onPressed: disabled ? null : onTogglePassword,
-                      tooltip: obscurePassword
-                          ? 'Show password'
-                          : 'Hide password',
-                      icon: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 150),
-                        child: Icon(
-                          obscurePassword
-                              ? Icons.visibility_outlined
-                              : Icons.visibility_off_outlined,
-                          key: ValueKey(obscurePassword),
-                        ),
+                _InlineNotice(
+                  message: isOffline
+                      ? 'You appear to be offline. Check your connection and try again.'
+                      : state.message!,
+                  warning: isOffline,
+                ),
+              ],
+              const SizedBox(height: AppSpacing.lg),
+              TextFormField(
+                controller: emailController,
+                focusNode: emailFocus,
+                enabled: !disabled,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                autofillHints: const [AutofillHints.email],
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: 'Email address',
+                  prefixIcon: const Icon(Icons.email_outlined),
+                  errorText: _fieldError('email'),
+                ),
+                validator: Validators.email,
+                onFieldSubmitted: (_) => passwordFocus.requestFocus(),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextFormField(
+                controller: passwordController,
+                focusNode: passwordFocus,
+                enabled: !disabled,
+                obscureText: obscurePassword,
+                textInputAction: TextInputAction.done,
+                autofillHints: const [AutofillHints.password],
+                decoration: InputDecoration(
+                  labelText: 'Password',
+                  prefixIcon: const Icon(Icons.lock_outline_rounded),
+                  errorText: _fieldError('password'),
+                  suffixIcon: IconButton(
+                    onPressed: disabled ? null : onTogglePassword,
+                    tooltip: obscurePassword
+                        ? 'Show password'
+                        : 'Hide password',
+                    icon: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 150),
+                      child: Icon(
+                        obscurePassword
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
+                        key: ValueKey(obscurePassword),
                       ),
                     ),
                   ),
-                  validator: Validators.loginPassword,
-                  onFieldSubmitted: (_) => disabled ? null : onSubmit(),
                 ),
-                const SizedBox(height: AppSpacing.lg),
-                Semantics(
-                  button: true,
-                  label: disabled ? 'Signing in' : 'Login',
-                  child: ElevatedButton(
-                    onPressed: disabled || isOffline ? null : onSubmit,
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 180),
-                      child: disabled
-                          ? const SizedBox.square(
-                              key: ValueKey('login-progress'),
-                              dimension: 22,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.5,
-                                color: AppColors.white,
-                              ),
-                            )
-                          : const Text('Login', key: ValueKey('login-label')),
+                validator: Validators.loginPassword,
+                onFieldSubmitted: (_) => disabled ? null : onSubmit(),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              Semantics(
+                button: true,
+                label: disabled ? 'Signing in' : 'Sign in',
+                child: FilledButton(
+                  onPressed: disabled || isOffline ? null : onSubmit,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 180),
+                    child: disabled
+                        ? const SizedBox.square(
+                            key: ValueKey('login-progress'),
+                            dimension: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.white,
+                            ),
+                          )
+                        : const Text('Sign in', key: ValueKey('login-label')),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              TextButton(
+                onPressed: disabled
+                    ? null
+                    : () => context.push(AppRoutes.forgotPasswordPath),
+                child: const Text('Forgot Password?'),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 15,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppSpacing.xs),
+                  Flexible(
+                    child: Text(
+                      'Your credentials are encrypted in transit and never stored as plain text on this device.',
+                      style: AppTextStyles.caption.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                TextButton(
-                  onPressed: disabled
-                      ? null
-                      : () => context.push(AppRoutes.forgotPasswordPath),
-                  child: const Text('Forgot Password?'),
-                ),
-                Text(
-                  'Resident registration will be available in the next phase. '
-                  'Your password is transmitted securely to the configured E-KOLEK service and is never stored on this device.',
-                  style: AppTextStyles.caption.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -358,12 +370,28 @@ class _InlineNotice extends StatelessWidget {
 class _CompactBrand extends StatelessWidget {
   const _CompactBrand();
   @override
-  Widget build(BuildContext context) => const Column(
+  Widget build(BuildContext context) => Column(
     children: [
-      Icon(Icons.recycling_rounded, size: 58, color: AppColors.primary),
-      SizedBox(height: AppSpacing.sm),
-      Text('E-KOLEK', style: AppTextStyles.headingLarge),
-      Text('Recycling made rewarding', style: AppTextStyles.bodyMedium),
+      Container(
+        padding: const EdgeInsets.all(AppSpacing.smMd),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          borderRadius: AppRadius.largeBorderRadius,
+        ),
+        child: Icon(
+          Icons.recycling_rounded,
+          size: 34,
+          color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      ),
+      const SizedBox(height: AppSpacing.smMd),
+      const Text('E-KOLEK', style: AppTextStyles.headingLarge),
+      Text(
+        'Small actions. Measurable impact.',
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
+        ),
+      ),
     ],
   );
 }
@@ -373,22 +401,78 @@ class _BrandPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Semantics(
     label: 'E-KOLEK Resident App',
-    child: const Padding(
-      padding: EdgeInsets.all(AppSpacing.xl),
+    child: Container(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      decoration: BoxDecoration(
+        color: AppColors.primaryDark,
+        borderRadius: AppRadius.extraLargeBorderRadius,
+      ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.recycling_rounded, size: 104, color: AppColors.primary),
-          SizedBox(height: AppSpacing.lg),
-          Text('E-KOLEK', style: AppTextStyles.displayLarge),
-          SizedBox(height: AppSpacing.sm),
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.smMd),
+            decoration: BoxDecoration(
+              color: AppColors.white.withValues(alpha: .12),
+              borderRadius: AppRadius.largeBorderRadius,
+            ),
+            child: const Icon(
+              Icons.recycling_rounded,
+              size: 36,
+              color: AppColors.white,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
           Text(
-            'A cleaner community starts with every responsible choice.',
-            style: AppTextStyles.bodyLarge,
-            textAlign: TextAlign.center,
+            'Your impact,\nmade visible.',
+            style: AppTextStyles.displayLarge.copyWith(color: AppColors.white),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            'Recycle responsibly, learn practical habits, and turn verified action into community rewards.',
+            style: AppTextStyles.bodyLarge.copyWith(
+              color: AppColors.onBrandMuted,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          const _BrandBenefit(
+            Icons.monitor_heart_outlined,
+            'Track verified environmental activity',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const _BrandBenefit(
+            Icons.workspace_premium_outlined,
+            'Earn points, badges, and useful rewards',
+          ),
+          const SizedBox(height: AppSpacing.md),
+          const _BrandBenefit(
+            Icons.groups_outlined,
+            'Grow with your barangay community',
           ),
         ],
       ),
     ),
+  );
+}
+
+class _BrandBenefit extends StatelessWidget {
+  const _BrandBenefit(this.icon, this.label);
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    children: [
+      Icon(icon, color: AppColors.onBrandMuted, size: 21),
+      const SizedBox(width: AppSpacing.smMd),
+      Expanded(
+        child: Text(
+          label,
+          style: AppTextStyles.bodyMedium.copyWith(color: AppColors.white),
+        ),
+      ),
+    ],
   );
 }

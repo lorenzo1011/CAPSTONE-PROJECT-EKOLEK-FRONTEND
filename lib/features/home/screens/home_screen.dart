@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
+import '../../../app/theme/app_layout.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/app_page_header.dart';
+import '../../../core/widgets/app_reveal.dart';
+import '../../../core/widgets/app_section_header.dart';
 import '../../../shared/providers/auth_providers.dart';
 import '../../../shared/providers/home_providers.dart';
 import '../../../shared/providers/challenges_providers.dart';
@@ -80,43 +84,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body = Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '${AppFormatters.greeting(DateTime.now())}${d.displayName == null ? '' : ', ${d.displayName}'}',
-                      style: Theme.of(context).textTheme.headlineSmall,
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Here is your environmental impact today.',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                  ],
-                ),
-              ),
-              IconButton.filledTonal(
-                tooltip: 'Notifications',
-                onPressed: () => context.push(AppRoutes.notificationsPath),
-                icon: Badge(
-                  label: Text('${ref.watch(unreadNotificationCountProvider)}'),
-                  isLabelVisible:
-                      ref.watch(unreadNotificationCountProvider) > 0,
-                  child: const Icon(Icons.notifications_outlined),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
           if (s.stale)
-            const Card(
-              child: ListTile(
-                leading: Icon(Icons.cloud_off_rounded),
-                title: Text('Showing your last loaded wallet information.'),
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Card(
+                color: Theme.of(context).colorScheme.secondaryContainer,
+                child: const ListTile(
+                  leading: Icon(Icons.cloud_off_rounded),
+                  title: Text('Showing your last synced information'),
+                  subtitle: Text('Pull down to reconnect and refresh.'),
+                ),
               ),
             ),
           if (d.wallet != null)
@@ -154,32 +131,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               leading: const Icon(Icons.info_outline_rounded),
               title: Text(s.walletMessage!),
             ),
-          const SizedBox(height: AppSpacing.lg),
-          Text('Quick actions', style: Theme.of(context).textTheme.titleLarge),
-          const HomeQuickActions(),
-          const SizedBox(height: AppSpacing.lg),
-          Text(
-            'Active challenge',
-            style: Theme.of(context).textTheme.titleLarge,
+          const SizedBox(height: AppSpacing.section),
+          const AppSectionHeader(
+            title: 'Quick actions',
+            subtitle: 'Your most-used E-KOLEK services.',
           ),
+          const SizedBox(height: AppSpacing.smMd),
+          const HomeQuickActions(),
+          const SizedBox(height: AppSpacing.section),
+          AppSectionHeader(
+            title: 'Active challenge',
+            subtitle: 'Keep your current environmental goal moving.',
+            actionLabel: 'Explore',
+            onAction: () => context.push(AppRoutes.challengesPath),
+          ),
+          const SizedBox(height: AppSpacing.smMd),
           ActiveChallengePreview(
             challenge: ref.watch(challengesStateProvider).activePreview,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Latest achievement',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.achievementsPath),
-                child: const Text('View all'),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.section),
+          AppSectionHeader(
+            title: 'Latest achievement',
+            subtitle: 'Milestones earned through verified actions.',
+            actionLabel: 'View all',
+            onAction: () => context.push(AppRoutes.achievementsPath),
           ),
+          const SizedBox(height: AppSpacing.smMd),
           Builder(
             builder: (context) {
               final badge = ref
@@ -207,21 +184,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Leaderboard',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.leaderboardPath),
-                child: const Text('View all'),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.section),
+          AppSectionHeader(
+            title: 'Community standing',
+            subtitle: 'See how your verified impact compares.',
+            actionLabel: 'Leaderboard',
+            onAction: () => context.push(AppRoutes.leaderboardPath),
           ),
+          const SizedBox(height: AppSpacing.smMd),
           Builder(
             builder: (context) {
               final rank = ref.watch(leaderboardStateProvider).residentRank;
@@ -244,7 +214,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               );
             },
           ),
-          const SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: AppSpacing.sm),
           const Card(
             child: ListTile(
               leading: Icon(Icons.event_available_rounded),
@@ -254,21 +224,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  'Recent point activity',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ),
-              TextButton(
-                onPressed: () => context.push(AppRoutes.walletActivityPath),
-                child: const Text('View all'),
-              ),
-            ],
+          const SizedBox(height: AppSpacing.section),
+          AppSectionHeader(
+            title: 'Recent point activity',
+            subtitle: 'Your latest earning and redemption history.',
+            actionLabel: 'View all',
+            onAction: () => context.push(AppRoutes.walletActivityPath),
           ),
+          const SizedBox(height: AppSpacing.smMd),
           if (s.transactionsMessage != null)
             ListTile(
               leading: const Icon(Icons.info_outline_rounded),
@@ -278,24 +241,73 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Text(
             'Last updated ${AppFormatters.dateTime(d.refreshedAt)}',
             textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       );
     }
     return RefreshIndicator(
       onRefresh: refresh,
-      child: ListView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: AppSpacing.screenPadding,
-        children: [
-          Text('Home', style: Theme.of(context).textTheme.headlineMedium),
-          const Text('Your E-KOLEK activity in one place'),
-          const SizedBox(height: AppSpacing.md),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000),
-            child: body,
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final horizontal = constraints.maxWidth >= AppLayout.tabletBreakpoint
+              ? AppSpacing.xl
+              : AppSpacing.md;
+          final displayName = s.data?.displayName;
+          final unread = ref.watch(unreadNotificationCountProvider);
+          return ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: EdgeInsets.fromLTRB(
+              horizontal,
+              AppSpacing.xl,
+              horizontal,
+              AppSpacing.xxl,
+            ),
+            children: [
+              Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: AppLayout.maxContentWidth,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AppReveal(
+                        child: AppPageHeader(
+                          eyebrow: 'Home',
+                          title: displayName == null
+                              ? 'Your E-KOLEK overview'
+                              : '${AppFormatters.greeting(DateTime.now())}, $displayName',
+                          subtitle:
+                              'Track your points, environmental impact, and community progress in one place.',
+                          actions: [
+                            IconButton.filledTonal(
+                              tooltip: 'Notifications',
+                              onPressed: () =>
+                                  context.push(AppRoutes.notificationsPath),
+                              icon: Badge(
+                                label: Text('$unread'),
+                                isLabelVisible: unread > 0,
+                                child: const Icon(Icons.notifications_outlined),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      AppReveal(
+                        delay: const Duration(milliseconds: 70),
+                        child: body,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

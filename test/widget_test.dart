@@ -81,7 +81,12 @@ void main() {
     await tester.pump(SplashScreen.minimumDisplayDuration);
     await tester.pumpAndSettle();
 
-    expect(find.text('Your E-KOLEK activity in one place'), findsOneWidget);
+    expect(
+      find.text(
+        'Track your points, environmental impact, and community progress in one place.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('main navigation displays all five destinations', (tester) async {
@@ -102,7 +107,12 @@ void main() {
     // authenticated request is pending, so it never has a fully settled frame.
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('Play, learn, and earn responsibly'), findsOneWidget);
+    expect(
+      find.text(
+        'Quick challenges that reinforce sustainable choices and reward consistent learning.',
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('selecting Rewards opens the Rewards screen', (tester) async {
@@ -111,7 +121,7 @@ void main() {
     await tester.tap(find.text('Rewards'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Turn your points into useful rewards'), findsOneWidget);
+    expect(find.text('Turn impact into value'), findsOneWidget);
   });
 
   testWidgets('compact width uses NavigationBar', (tester) async {

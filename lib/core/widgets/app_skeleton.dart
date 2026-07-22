@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_colors.dart';
 import '../../app/theme/app_radius.dart';
 import '../../app/theme/app_motion.dart';
 
@@ -64,7 +63,7 @@ class _AppSkeletonState extends State<AppSkeleton>
           width: widget.width,
           height: widget.height,
           decoration: BoxDecoration(
-            color: AppColors.surfaceVariant,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/adaptive_page_scaffold.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/app_offline_view.dart';
@@ -39,20 +40,26 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
           AchievementsPhase.initial,
           AchievementsPhase.loading,
         }.contains(state.phase)) {
-      return const Scaffold(
-        appBar: _AppBar(),
+      return const AdaptivePageScaffold(
+        title: 'Achievements',
+        subtitle:
+            'A visual record of milestones earned through verified action.',
         body: AchievementGallerySkeleton(),
       );
     }
     if (state.badges.isEmpty && state.phase == AchievementsPhase.offline) {
-      return Scaffold(
-        appBar: const _AppBar(),
+      return AdaptivePageScaffold(
+        title: 'Achievements',
+        subtitle:
+            'A visual record of milestones earned through verified action.',
         body: AppOfflineView(onRetry: controller.load),
       );
     }
     if (state.badges.isEmpty && state.phase == AchievementsPhase.failure) {
-      return Scaffold(
-        appBar: const _AppBar(),
+      return AdaptivePageScaffold(
+        title: 'Achievements',
+        subtitle:
+            'A visual record of milestones earned through verified action.',
         body: AppErrorView(
           title: 'Achievements unavailable',
           message: state.message!,
@@ -70,8 +77,9 @@ class _AchievementsScreenState extends ConsumerState<AchievementsScreen> {
           },
         )
         .toList(growable: false);
-    return Scaffold(
-      appBar: const _AppBar(),
+    return AdaptivePageScaffold(
+      title: 'Achievements',
+      subtitle: 'A visual record of milestones earned through verified action.',
       body: RefreshIndicator(
         onRefresh: () => controller.load(refresh: true),
         child: CustomScrollView(
@@ -227,13 +235,4 @@ class _Metric extends StatelessWidget {
       Text(label),
     ],
   );
-}
-
-class _AppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _AppBar();
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-  @override
-  Widget build(BuildContext context) =>
-      AppBar(title: const Text('Achievements'));
 }

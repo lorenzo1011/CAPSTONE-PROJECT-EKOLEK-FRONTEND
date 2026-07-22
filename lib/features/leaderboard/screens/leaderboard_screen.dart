@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../core/widgets/adaptive_page_scaffold.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
@@ -35,20 +36,26 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
           LeaderboardPhase.initial,
           LeaderboardPhase.loading,
         }.contains(state.phase)) {
-      return const Scaffold(
-        appBar: _LeaderboardAppBar(),
+      return const AdaptivePageScaffold(
+        title: 'Community leaderboard',
+        subtitle:
+            'See how verified environmental impact is growing across the city.',
         body: LeaderboardScreenSkeleton(),
       );
     }
     if (!state.hasData && state.phase == LeaderboardPhase.offline) {
-      return Scaffold(
-        appBar: const _LeaderboardAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Community leaderboard',
+        subtitle:
+            'See how verified environmental impact is growing across the city.',
         body: AppOfflineView(onRetry: controller.load),
       );
     }
     if (!state.hasData && state.phase == LeaderboardPhase.failure) {
-      return Scaffold(
-        appBar: const _LeaderboardAppBar(),
+      return AdaptivePageScaffold(
+        title: 'Community leaderboard',
+        subtitle:
+            'See how verified environmental impact is growing across the city.',
         body: AppErrorView(
           title: 'Leaderboard unavailable',
           message: state.message!,
@@ -62,8 +69,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
     final itemCount = residentScope
         ? state.residentPage?.items.length ?? 0
         : state.barangayPage?.items.length ?? 0;
-    return Scaffold(
-      appBar: const _LeaderboardAppBar(),
+    return AdaptivePageScaffold(
+      title: 'Community leaderboard',
+      subtitle:
+          'See how verified environmental impact is growing across the city.',
       body: RefreshIndicator(
         onRefresh: () => controller.load(refresh: true),
         child: CustomScrollView(
@@ -225,14 +234,4 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen> {
       ),
     );
   }
-}
-
-class _LeaderboardAppBar extends StatelessWidget
-    implements PreferredSizeWidget {
-  const _LeaderboardAppBar();
-  @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
-  @override
-  Widget build(BuildContext context) =>
-      AppBar(title: const Text('Leaderboard'));
 }

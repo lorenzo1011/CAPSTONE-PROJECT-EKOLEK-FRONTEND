@@ -113,7 +113,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Your E-KOLEK activity in one place'), findsOneWidget);
+    expect(
+      find.text(
+        'Track your points, environmental impact, and community progress in one place.',
+      ),
+      findsOneWidget,
+    );
   });
 
   test('non-resident restored session is denied and cleared', () async {
@@ -177,7 +182,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Login'));
+    await tester.tap(find.text('Sign in'));
     await tester.pump();
     expect(find.text('Email is required.'), findsOneWidget);
     expect(find.text('Password is required.'), findsOneWidget);
