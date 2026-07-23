@@ -81,12 +81,7 @@ void main() {
     await tester.pump(SplashScreen.minimumDisplayDuration);
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Track your points, environmental impact, and community progress in one place.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('E-KOLEK'), findsOneWidget);
   });
 
   testWidgets('main navigation displays all five destinations', (tester) async {
@@ -109,7 +104,7 @@ void main() {
 
     expect(
       find.text(
-        'Quick challenges that reinforce sustainable choices and reward consistent learning.',
+        'Play, learn, and earn!\nFun challenges that make a difference.',
       ),
       findsOneWidget,
     );
@@ -121,7 +116,10 @@ void main() {
     await tester.tap(find.text('Rewards'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Turn impact into value'), findsOneWidget);
+    expect(
+      find.text('Redeem points, support local,\nand enjoy rewards.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('compact width uses NavigationBar', (tester) async {

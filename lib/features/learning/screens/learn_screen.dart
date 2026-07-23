@@ -36,9 +36,16 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
     final controller = ref.watch(learningControllerProvider);
     final state = controller.state;
     return AdaptivePageScaffold(
-      title: 'Learning hub',
+      title: 'Learn',
       subtitle:
-          'Practical lessons designed to turn everyday choices into lasting environmental habits.',
+          'Keep learning, keep growing 🌱\nPractical lessons for a greener tomorrow.',
+      actions: [
+        IconButton(
+          tooltip: 'Search lessons',
+          onPressed: () {},
+          icon: const Icon(Icons.search_rounded),
+        ),
+      ],
       body: _body(state, controller),
     );
   }
@@ -81,66 +88,86 @@ class _LearnScreenState extends ConsumerState<LearnScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AppCard(
-                  backgroundColor: Theme.of(
-                    context,
-                  ).colorScheme.primaryContainer,
-                  borderColor: Theme.of(context).colorScheme.primaryContainer,
-                  child: Row(
+                  backgroundColor: const Color(0xFFFCFAFF),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.auto_stories_rounded,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        size: 34,
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$completed of ${state.videos.length} lessons completed',
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Your Progress',
+                                  style: Theme.of(context).textTheme.labelLarge
+                                      ?.copyWith(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                Text(
+                                  '$completed of ${state.videos.length} lessons completed',
+                                  style: Theme.of(context).textTheme.bodyMedium,
+                                ),
+                                const SizedBox(height: AppSpacing.md),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(99),
+                                  child: LinearProgressIndicator(
+                                    minHeight: 7,
+                                    value: completed / state.videos.length,
+                                    backgroundColor: const Color(0xFFE9E6ED),
                                   ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              completed == 0
-                                  ? 'Start a lesson and build your first learning streak.'
-                                  : 'Continue learning to grow your practical eco skills.',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimaryContainer,
-                                  ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: AppSpacing.md),
+                          Image.asset(
+                            'assets/images/onboarding/learn_progress_sprout.png',
+                            width: 86,
+                            height: 86,
+                            fit: BoxFit.contain,
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: AppSpacing.section),
+                AppSectionHeader(
+                  title: 'Continue Learning',
+                  actionLabel: 'See all',
+                ),
+                const SizedBox(height: AppSpacing.smMd),
+                LearningVideoCard(
+                  video: state.videos.first,
+                  featured: true,
+                  onTap: () => context.push(
+                    AppRoutes.learningVideoPath(state.videos.first.id),
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.section),
                 const AppSectionHeader(
-                  title: 'Recommended lessons',
-                  subtitle:
-                      'Continue where you left off or discover a new topic.',
+                  title: 'Recommended for You',
+                  actionLabel: 'See all',
                 ),
                 const SizedBox(height: AppSpacing.smMd),
               ],
             ),
           ),
           SliverList.separated(
-            itemCount: state.videos.length,
+            itemCount: state.videos.length - 1,
             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.smMd),
             itemBuilder: (context, index) {
-              final video = state.videos[index];
+              final video = state.videos[index + 1];
               return LearningVideoCard(
                 video: video,
+                featured: false,
                 onTap: () =>
                     context.push(AppRoutes.learningVideoPath(video.id)),
               );

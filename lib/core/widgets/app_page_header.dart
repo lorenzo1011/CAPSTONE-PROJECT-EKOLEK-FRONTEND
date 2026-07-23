@@ -50,7 +50,11 @@ class AppPageHeader extends StatelessWidget {
                     header: true,
                     child: Text(
                       title,
-                      style: Theme.of(context).textTheme.headlineLarge,
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: scheme.primary,
+                          ),
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -59,7 +63,7 @@ class AppPageHeader extends StatelessWidget {
                       constraints: const BoxConstraints(maxWidth: 680),
                       child: Text(
                         subtitle!,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: scheme.onSurfaceVariant,
                         ),
                       ),
@@ -72,16 +76,12 @@ class AppPageHeader extends StatelessWidget {
         );
         if (actions.isEmpty) return titleBlock;
         if (compact) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              titleBlock,
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.sm,
-                children: actions,
-              ),
+              Expanded(child: titleBlock),
+              const SizedBox(width: AppSpacing.sm),
+              ...actions,
             ],
           );
         }

@@ -14,6 +14,8 @@ import '../../../core/widgets/app_error_view.dart';
 import '../../../core/widgets/app_loading_view.dart';
 import '../../../shared/providers/auth_providers.dart';
 import '../../../shared/providers/profile_providers.dart';
+import '../../../shared/providers/home_providers.dart';
+import '../../../shared/providers/achievements_providers.dart';
 import '../models/resident_profile.dart';
 import '../providers/profile_state.dart';
 
@@ -37,9 +39,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   Widget build(BuildContext context) {
     final state = ref.watch(profileStateProvider);
     return AdaptivePageScaffold(
-      title: 'Account',
-      subtitle:
-          'Your verified identity, activity shortcuts, privacy, and support in one secure place.',
+      title: 'Profile',
+      actions: [
+        IconButton(
+          tooltip: 'Profile settings',
+          onPressed: () => context.push(AppRoutes.editProfilePath),
+          icon: const Icon(Icons.settings_outlined),
+        ),
+      ],
       body: _body(state),
     );
   }
@@ -58,12 +65,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       );
     }
     final profile = state.profile!;
+    final points = ref.watch(homeStateProvider).data?.wallet?.currentBalance;
+    final badges = ref.watch(achievementsStateProvider).summary?.totalUnlocked;
     return RefreshIndicator(
       onRefresh: () => ref.read(profileControllerProvider).load(refresh: true),
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           _ProfileHeader(profile: profile),
+          const SizedBox(height: AppSpacing.smMd),
+          _ProfileStats(points: points, badges: badges),
           if (state.stale || state.message != null) ...[
             const SizedBox(height: AppSpacing.smMd),
             MaterialBanner(
@@ -96,46 +107,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 AppRoutes.editProfilePath,
               ),
               _tile(
-                Icons.password_rounded,
-                'Change password',
-                'Update your account password securely',
-                AppRoutes.changePasswordPath,
-              ),
-              _tile(
                 Icons.badge_outlined,
                 'Digital Resident ID',
                 'View your verified resident ID',
                 AppRoutes.residentIdPath,
               ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.md),
-          _Section(
-            title: 'Activity and preferences',
-            children: [
               _tile(
-                Icons.notifications_outlined,
-                'Notification Center',
-                'View announcements and resident updates',
-                AppRoutes.notificationsPath,
+                Icons.password_rounded,
+                'Change password',
+                'Keep your account secure',
+                AppRoutes.changePasswordPath,
               ),
               _tile(
-                Icons.leaderboard_outlined,
-                'Leaderboard',
-                'View resident and barangay rankings',
-                AppRoutes.leaderboardPath,
-              ),
-              _tile(
-                Icons.military_tech_outlined,
-                'Achievements',
-                'View verified badges and progress',
-                AppRoutes.achievementsPath,
-              ),
-              _tile(
-                Icons.receipt_long_outlined,
-                'Redemption requests',
-                'Track reward request status',
-                AppRoutes.redemptionHistoryPath,
+                Icons.shield_outlined,
+                'Privacy & Security',
+                'Manage your privacy settings',
+                AppRoutes.legalInformationPath,
               ),
             ],
           ),
@@ -148,12 +135,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 'Help Center',
                 'View available support information',
                 AppRoutes.helpCenterPath,
-              ),
-              _tile(
-                Icons.gavel_outlined,
-                'Legal information',
-                'View available legal documents',
-                AppRoutes.legalInformationPath,
               ),
               _tile(
                 Icons.info_outline,
@@ -219,8 +200,8 @@ class _ProfileHeader extends StatelessWidget {
     final image = profile.photoUrl;
     return AppCard(
       elevated: true,
-      backgroundColor: AppColors.primaryDark,
-      borderColor: AppColors.primaryDark,
+      backgroundColor: AppColors.primaryContainer,
+      borderColor: AppColors.primaryContainer,
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
@@ -228,12 +209,12 @@ class _ProfileHeader extends StatelessWidget {
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.onBrandMuted, width: 2),
+              border: Border.all(color: AppColors.white, width: 3),
             ),
             child: CircleAvatar(
               radius: 38,
-              backgroundColor: AppColors.white.withValues(alpha: 0.14),
-              foregroundColor: AppColors.white,
+              backgroundColor: AppColors.white,
+              foregroundColor: AppColors.primary,
               backgroundImage: image == null || image.isEmpty
                   ? null
                   : CachedNetworkImageProvider(image),
@@ -249,15 +230,15 @@ class _ProfileHeader extends StatelessWidget {
               children: [
                 Text(
                   profile.fullName,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleLarge?.copyWith(color: AppColors.white),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   profile.email,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onBrandMuted,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: AppSpacing.sm),
@@ -267,14 +248,14 @@ class _ProfileHeader extends StatelessWidget {
                     vertical: AppSpacing.xs,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.12),
+                    color: AppColors.white,
                     borderRadius: AppRadius.circularBorderRadius,
                   ),
                   child: Text(
                     '${_statusLabel(profile.approvalStatus.value)} resident',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.labelMedium?.copyWith(color: AppColors.white),
+                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: AppColors.primaryDark,
+                    ),
                   ),
                 ),
               ],
@@ -282,7 +263,7 @@ class _ProfileHeader extends StatelessWidget {
           ),
           const Icon(
             Icons.verified_rounded,
-            color: AppColors.onBrandMuted,
+            color: AppColors.primary,
             size: 28,
           ),
         ],
@@ -296,6 +277,79 @@ class _ProfileHeader extends StatelessWidget {
         ? 'Unknown'
         : '${normalized[0].toUpperCase()}${normalized.substring(1)}';
   }
+}
+
+class _ProfileStats extends StatelessWidget {
+  const _ProfileStats({required this.points, required this.badges});
+  final int? points;
+  final int? badges;
+
+  @override
+  Widget build(BuildContext context) => AppCard(
+    padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+    child: Row(
+      children: [
+        Expanded(
+          child: _ProfileMetric(
+            icon: Icons.energy_savings_leaf_rounded,
+            value: points?.toString() ?? '—',
+            label: 'Eco Points',
+            color: const Color(0xFF159447),
+          ),
+        ),
+        const SizedBox(height: 48, child: VerticalDivider()),
+        Expanded(
+          child: _ProfileMetric(
+            icon: Icons.shield_rounded,
+            value: badges?.toString() ?? '—',
+            label: 'Badges',
+            color: const Color(0xFF159447),
+          ),
+        ),
+        const SizedBox(height: 48, child: VerticalDivider()),
+        const Expanded(
+          child: _ProfileMetric(
+            icon: Icons.local_fire_department_rounded,
+            value: '—',
+            label: 'Day Streak',
+            color: Color(0xFFFF7A20),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _ProfileMetric extends StatelessWidget {
+  const _ProfileMetric({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+  });
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+  @override
+  Widget build(BuildContext context) => Column(
+    children: [
+      Icon(icon, color: color, size: 22),
+      const SizedBox(height: 4),
+      Text(
+        value,
+        style: Theme.of(
+          context,
+        ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
+      ),
+      Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: AppColors.textSecondary),
+      ),
+    ],
+  );
 }
 
 class _Section extends StatelessWidget {

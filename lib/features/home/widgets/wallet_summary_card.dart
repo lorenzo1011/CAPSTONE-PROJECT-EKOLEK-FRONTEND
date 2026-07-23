@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_motion.dart';
 import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
+import '../../../app/theme/app_text_styles.dart';
 import '../../../core/utils/formatters.dart';
 import '../../wallet/models/wallet_summary.dart';
 
@@ -14,174 +16,115 @@ class WalletSummaryCard extends StatelessWidget {
   final WalletSummary wallet;
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Semantics(
-      label: 'Available point balance ${wallet.currentBalance}',
-      child: Container(
-        padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: BoxDecoration(
-          color: AppColors.primaryDark,
-          borderRadius: AppRadius.extraLargeBorderRadius,
-          boxShadow: const [
-            BoxShadow(
-              color: AppColors.cardShadow,
-              blurRadius: 28,
-              offset: Offset(0, 12),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(AppSpacing.sm),
-                  decoration: BoxDecoration(
-                    color: AppColors.white.withValues(alpha: 0.12),
-                    borderRadius: AppRadius.mediumBorderRadius,
-                  ),
-                  child: const Icon(
-                    Icons.account_balance_wallet_outlined,
-                    color: AppColors.white,
-                    size: 22,
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.smMd),
-                Expanded(
-                  child: Text(
-                    'E-KOLEK wallet',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: AppColors.white,
-                    ),
-                  ),
-                ),
-                TextButton.icon(
-                  onPressed: () => context.push(AppRoutes.walletActivityPath),
-                  style: TextButton.styleFrom(
-                    foregroundColor: AppColors.onBrandMuted,
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                  ),
-                  icon: const Icon(Icons.arrow_outward_rounded, size: 18),
-                  label: const Text('Activity'),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Text(
-              'AVAILABLE BALANCE',
-              style: theme.textTheme.labelMedium?.copyWith(
-                color: AppColors.onBrandMuted,
-                letterSpacing: 1.1,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      AppFormatters.points(wallet.currentBalance),
-                      style: theme.textTheme.displayLarge?.copyWith(
-                        color: AppColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const Padding(
-                  padding: EdgeInsets.only(bottom: 7, left: AppSpacing.sm),
-                  child: Text(
-                    'points',
-                    style: TextStyle(color: AppColors.onBrandMuted),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.white.withValues(alpha: 0.08),
-                borderRadius: AppRadius.largeBorderRadius,
-                border: Border.all(
-                  color: AppColors.white.withValues(alpha: 0.10),
+  Widget build(BuildContext context) => Semantics(
+    button: true,
+    label: 'E-KOLEK wallet balance ${wallet.currentBalance} points',
+    child: Material(
+      color: const Color(0xFFF0FAEE),
+      borderRadius: AppRadius.largeBorderRadius,
+      child: InkWell(
+        onTap: () => context.push(AppRoutes.walletActivityPath),
+        borderRadius: AppRadius.largeBorderRadius,
+        child: Container(
+          height: 154,
+          padding: const EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            borderRadius: AppRadius.largeBorderRadius,
+            border: Border.all(color: const Color(0xFFDCEFD8)),
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -5,
+                bottom: -25,
+                width: 125,
+                height: 125,
+                child: Image.asset(
+                  'assets/images/onboarding/home_wallet_points.png',
+                  fit: BoxFit.contain,
                 ),
               ),
-              child: Row(
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: _WalletMetric(
-                      label: 'Lifetime earned',
-                      value: AppFormatters.points(wallet.lifetimeEarned),
-                      icon: Icons.trending_up_rounded,
-                    ),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.account_balance_wallet_rounded,
+                        color: Color(0xFF159447),
+                        size: 20,
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        'E-KOLEK Wallet',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const Spacer(),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withValues(alpha: .8),
+                          borderRadius: AppRadius.circularBorderRadius,
+                        ),
+                        child: const Row(
+                          children: [
+                            Text(
+                              'View activity',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            SizedBox(width: 2),
+                            Icon(Icons.chevron_right_rounded, size: 16),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    width: 1,
-                    height: 38,
-                    color: AppColors.white.withValues(alpha: 0.14),
+                  const Spacer(),
+                  Text(
+                    'Available Balance',
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  Expanded(
-                    child: _WalletMetric(
-                      label: 'Redeemed',
-                      value: AppFormatters.points(wallet.lifetimeRedeemed),
-                      icon: Icons.redeem_outlined,
-                    ),
+                  const SizedBox(height: 2),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(
+                          begin: 0,
+                          end: wallet.currentBalance.toDouble(),
+                        ),
+                        duration: AppMotion.accessible(context, AppMotion.slow),
+                        builder: (context, value, child) => Text(
+                          AppFormatters.points(value.round()),
+                          style: AppTextStyles.metric.copyWith(
+                            fontSize: 38,
+                            color: const Color(0xFF087D3C),
+                          ),
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.only(left: 5, bottom: 6),
+                        child: Text(
+                          'points',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _WalletMetric extends StatelessWidget {
-  const _WalletMetric({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-    child: Row(
-      children: [
-        Icon(icon, color: AppColors.onBrandMuted, size: 20),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleSmall?.copyWith(color: AppColors.white),
-              ),
-              Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.onBrandMuted),
               ),
             ],
           ),
         ),
-      ],
+      ),
     ),
   );
 }

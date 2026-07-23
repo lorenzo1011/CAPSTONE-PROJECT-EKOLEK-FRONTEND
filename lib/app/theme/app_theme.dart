@@ -14,32 +14,33 @@ class AppTheme {
 
   static ThemeData _build(Brightness brightness) {
     final dark = brightness == Brightness.dark;
+
     final scheme = ColorScheme(
       brightness: brightness,
       primary: dark ? AppColors.primaryLight : AppColors.primary,
       onPrimary: dark ? AppColors.onPrimaryContainer : AppColors.white,
       primaryContainer: dark
-          ? const Color(0xFF164B39)
+          ? const Color(0xFF174E47)
           : AppColors.primaryContainer,
       onPrimaryContainer: dark
-          ? const Color(0xFFD9F5E7)
+          ? const Color(0xFFD9F8F0)
           : AppColors.onPrimaryContainer,
-      secondary: dark ? const Color(0xFF8ACBD0) : AppColors.secondary,
-      onSecondary: dark ? const Color(0xFF073D43) : AppColors.white,
+      secondary: dark ? const Color(0xFFAFC6EC) : AppColors.secondary,
+      onSecondary: dark ? const Color(0xFF142641) : AppColors.white,
       secondaryContainer: dark
-          ? const Color(0xFF174A50)
+          ? const Color(0xFF263B59)
           : AppColors.secondaryContainer,
       onSecondaryContainer: dark
-          ? const Color(0xFFD5F3F4)
+          ? const Color(0xFFE5EDFA)
           : AppColors.onSecondaryContainer,
-      tertiary: dark ? const Color(0xFFF0C66C) : AppColors.accent,
-      onTertiary: dark ? const Color(0xFF4C3600) : AppColors.textPrimary,
+      tertiary: dark ? const Color(0xFFFFD17A) : AppColors.accent,
+      onTertiary: dark ? const Color(0xFF4B3500) : AppColors.onAccentContainer,
       error: dark ? const Color(0xFFFFB4AB) : AppColors.error,
       onError: dark ? const Color(0xFF690005) : AppColors.white,
-      errorContainer: dark ? const Color(0xFF7E2F2F) : AppColors.errorContainer,
+      errorContainer: dark ? const Color(0xFF7B3030) : AppColors.errorContainer,
       onErrorContainer: dark
           ? const Color(0xFFFFDAD6)
-          : const Color(0xFF5E1515),
+          : const Color(0xFF5D1717),
       surface: dark ? AppColors.darkSurface : AppColors.surface,
       onSurface: dark ? AppColors.darkTextPrimary : AppColors.textPrimary,
       surfaceContainerHighest: dark
@@ -49,7 +50,7 @@ class AppTheme {
           ? AppColors.darkTextSecondary
           : AppColors.textSecondary,
       outline: dark ? AppColors.darkBorder : AppColors.border,
-      outlineVariant: dark ? const Color(0xFF29372F) : AppColors.divider,
+      outlineVariant: dark ? const Color(0xFF293A4A) : AppColors.divider,
       shadow: AppColors.black,
       scrim: AppColors.black,
       inverseSurface: dark ? AppColors.surface : AppColors.textPrimary,
@@ -58,6 +59,7 @@ class AppTheme {
           : AppColors.darkTextPrimary,
       inversePrimary: dark ? AppColors.primary : AppColors.primaryLight,
     );
+
     final textTheme = const TextTheme(
       displayLarge: AppTextStyles.displayLarge,
       displayMedium: AppTextStyles.displayMedium,
@@ -74,13 +76,10 @@ class AppTheme {
       labelMedium: AppTextStyles.labelMedium,
       labelSmall: AppTextStyles.caption,
     ).apply(bodyColor: scheme.onSurface, displayColor: scheme.onSurface);
+
     final inputBorder = OutlineInputBorder(
       borderRadius: AppRadius.mediumBorderRadius,
       borderSide: BorderSide(color: scheme.outline),
-    );
-    final cardShape = RoundedRectangleBorder(
-      borderRadius: AppRadius.largeBorderRadius,
-      side: BorderSide(color: scheme.outlineVariant),
     );
 
     return ThemeData(
@@ -93,7 +92,7 @@ class AppTheme {
       canvasColor: dark ? AppColors.darkBackground : AppColors.background,
       textTheme: textTheme,
       visualDensity: VisualDensity.standard,
-      splashFactory: InkSparkle.splashFactory,
+      splashFactory: InkRipple.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
           TargetPlatform.android: PredictiveBackPageTransitionsBuilder(),
@@ -120,10 +119,14 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: scheme.surface,
         surfaceTintColor: AppColors.transparent,
+        shadowColor: dark ? AppColors.black : AppColors.cardShadow,
         elevation: 0,
         margin: EdgeInsets.zero,
         clipBehavior: Clip.antiAlias,
-        shape: cardShape,
+        shape: RoundedRectangleBorder(
+          borderRadius: AppRadius.largeBorderRadius,
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -137,6 +140,10 @@ class AppTheme {
             borderRadius: AppRadius.mediumBorderRadius,
           ),
           elevation: 0,
+        ).copyWith(
+          overlayColor: WidgetStatePropertyAll(
+            scheme.onPrimary.withValues(alpha: 0.1),
+          ),
         ),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -178,17 +185,18 @@ class AppTheme {
             AppLayout.minimumTouchTarget,
             AppLayout.minimumTouchTarget,
           ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.smMd),
           foregroundColor: scheme.primary,
           textStyle: AppTextStyles.button,
           shape: RoundedRectangleBorder(
-            borderRadius: AppRadius.mediumBorderRadius,
+            borderRadius: AppRadius.smallBorderRadius,
           ),
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
           minimumSize: const Size.square(AppLayout.minimumTouchTarget),
+          foregroundColor: scheme.onSurface,
           shape: RoundedRectangleBorder(
             borderRadius: AppRadius.mediumBorderRadius,
           ),
@@ -253,7 +261,7 @@ class AppTheme {
         surfaceTintColor: AppColors.transparent,
         indicatorColor: scheme.primaryContainer,
         indicatorShape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: AppRadius.circularBorderRadius,
         ),
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
@@ -303,6 +311,12 @@ class AppTheme {
           borderRadius: AppRadius.circularBorderRadius,
         ),
       ),
+      badgeTheme: BadgeThemeData(
+        backgroundColor: scheme.error,
+        textColor: scheme.onError,
+        textStyle: AppTextStyles.caption.copyWith(fontWeight: FontWeight.w700),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+      ),
       dividerTheme: DividerThemeData(
         color: scheme.outlineVariant,
         thickness: 1,
@@ -350,7 +364,7 @@ class AppTheme {
         color: scheme.primary,
         linearTrackColor: scheme.surfaceContainerHighest,
         circularTrackColor: scheme.surfaceContainerHighest,
-        linearMinHeight: 7,
+        linearMinHeight: 8,
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
@@ -380,6 +394,17 @@ class AppTheme {
         hoverElevation: 3,
         shape: RoundedRectangleBorder(
           borderRadius: AppRadius.largeBorderRadius,
+        ),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: dark ? AppColors.darkSurfaceVariant : AppColors.textPrimary,
+          borderRadius: AppRadius.smallBorderRadius,
+        ),
+        textStyle: AppTextStyles.caption.copyWith(color: AppColors.white),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.smMd,
+          vertical: AppSpacing.sm,
         ),
       ),
     );

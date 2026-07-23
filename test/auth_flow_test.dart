@@ -113,12 +113,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(
-      find.text(
-        'Track your points, environmental impact, and community progress in one place.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('E-KOLEK'), findsOneWidget);
   });
 
   test('non-resident restored session is denied and cleared', () async {

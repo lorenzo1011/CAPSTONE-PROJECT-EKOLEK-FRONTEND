@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
+import '../../../app/theme/app_colors.dart';
+import '../../../app/theme/app_radius.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/widgets/adaptive_page_scaffold.dart';
 import '../../../core/widgets/app_card.dart';
@@ -11,9 +13,9 @@ import '../../../core/widgets/app_offline_view.dart';
 import '../../../core/widgets/app_section_header.dart';
 import '../../../shared/providers/games_providers.dart';
 import '../providers/games_state.dart';
+import '../models/daily_game_progress.dart';
 import '../widgets/game_card.dart';
 import '../widgets/games_screen_skeleton.dart';
-import '../widgets/recent_game_activity.dart';
 
 class GamesScreen extends ConsumerStatefulWidget {
   const GamesScreen({super.key});
@@ -36,9 +38,16 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
     final controller = ref.watch(gamesControllerProvider);
     final state = controller.state;
     return AdaptivePageScaffold(
-      title: 'Eco arcade',
+      title: 'Games',
       subtitle:
-          'Quick challenges that reinforce sustainable choices and reward consistent learning.',
+          'Play, learn, and earn!\nFun challenges that make a difference.',
+      actions: [
+        IconButton(
+          tooltip: 'Games',
+          onPressed: () {},
+          icon: const Icon(Icons.sports_esports_outlined),
+        ),
+      ],
       body: _body(controller, state),
     );
   }
@@ -87,54 +96,13 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                       ),
                     ),
                   ),
-                if (state.dailyProgress != null)
-                  AppCard(
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.secondaryContainer,
-                    borderColor: Theme.of(
-                      context,
-                    ).colorScheme.secondaryContainer,
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.local_fire_department_outlined,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSecondaryContainer,
-                          size: 34,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${state.dailyProgress!.totalPointsEarned} points earned today',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondaryContainer,
-                                    ),
-                              ),
-                              const SizedBox(height: AppSpacing.xs),
-                              Text(
-                                '${state.dailyProgress!.totalPlays} verified plays · Keep your momentum going',
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.onSecondaryContainer,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.arrow_forward_rounded),
-                      ],
-                    ),
-                  ),
+                _GamesHero(
+                  progress: state.dailyProgress,
+                  onPlay: () {
+                    final game = state.games.first;
+                    context.push(AppRoutes.gameDetailPath(game.id));
+                  },
+                ),
                 if (state.dailyMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
@@ -144,35 +112,23 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
                     ),
                   ),
                 const SizedBox(height: AppSpacing.section),
-                const AppSectionHeader(
-                  title: 'Recent activity',
-                  subtitle: 'Your latest validated game sessions.',
-                ),
-                const SizedBox(height: AppSpacing.smMd),
-                RecentGameActivity(attempts: state.recentAttempts),
+                const _AchievementsStrip(),
                 const SizedBox(height: AppSpacing.section),
-                AppSectionHeader(
-                  title: 'Choose a game',
-                  subtitle: '${state.games.length} activities available now.',
-                ),
+                AppSectionHeader(title: 'All Games', actionLabel: 'See all'),
                 const SizedBox(height: AppSpacing.smMd),
               ],
             ),
           ),
-          SliverGrid(
-            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-              maxCrossAxisExtent: 430,
-              mainAxisExtent: 210,
-              crossAxisSpacing: AppSpacing.md,
-              mainAxisSpacing: AppSpacing.md,
-            ),
-            delegate: SliverChildBuilderDelegate((context, index) {
+          SliverList.separated(
+            itemCount: state.games.length,
+            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+            itemBuilder: (context, index) {
               final game = state.games[index];
               return GameCard(
                 game: game,
                 onTap: () => context.push(AppRoutes.gameDetailPath(game.id)),
               );
-            }, childCount: state.games.length),
+            },
           ),
           if (state.hasNext)
             SliverToBoxAdapter(
@@ -190,4 +146,195 @@ class _GamesScreenState extends ConsumerState<GamesScreen> {
       ),
     );
   }
+}
+
+class _AchievementsStrip extends StatelessWidget {
+  const _AchievementsStrip();
+
+  @override
+  Widget build(BuildContext context) {
+    const items = [
+      (Icons.eco_rounded, 'Eco\nStarter'),
+      (Icons.recycling_rounded, 'Segregation\nPro'),
+      (Icons.energy_savings_leaf_rounded, 'Green\nStreak'),
+      (Icons.groups_rounded, 'Community\nHero'),
+      (Icons.emoji_events_rounded, 'Eco\nChampion'),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Achievements',
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+            const Spacer(),
+            Text(
+              'See all',
+              style: Theme.of(
+                context,
+              ).textTheme.labelMedium?.copyWith(color: AppColors.primary),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.smMd),
+        Row(
+          children: [
+            for (final item in items)
+              Expanded(
+                child: Column(
+                  children: [
+                    Container(
+                      width: 45,
+                      height: 45,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryContainer,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primaryLight,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(item.$1, color: AppColors.primary, size: 22),
+                    ),
+                    const SizedBox(height: 5),
+                    Text(
+                      item.$2,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.labelSmall?.copyWith(fontSize: 9),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _GamesHero extends StatelessWidget {
+  const _GamesHero({required this.onPlay, required this.progress});
+
+  final VoidCallback onPlay;
+  final DailyGameProgress? progress;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    height: 280,
+    clipBehavior: Clip.antiAlias,
+    decoration: BoxDecoration(
+      color: const Color(0xFFDFF5FF),
+      borderRadius: AppRadius.extraLargeBorderRadius,
+      border: Border.all(color: const Color(0xFFCDE9F6)),
+    ),
+    child: Stack(
+      children: [
+        Positioned.fill(
+          child: Image.asset(
+            'assets/images/backgrounds/bg_eco_park_city.png',
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 82,
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF32B83F), Color(0xFF07873B)],
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _HeroMetric(
+                    icon: Icons.emoji_events_rounded,
+                    value: '${progress?.totalPointsEarned ?? 0}',
+                    label: 'Points Today',
+                  ),
+                ),
+                const SizedBox(
+                  height: 48,
+                  child: VerticalDivider(color: Color(0x66FFFFFF)),
+                ),
+                Expanded(
+                  child: _HeroMetric(
+                    icon: Icons.sports_esports_rounded,
+                    value: '${progress?.totalPlays ?? 0}',
+                    label: 'Games Played',
+                  ),
+                ),
+                const SizedBox(
+                  height: 48,
+                  child: VerticalDivider(color: Color(0x66FFFFFF)),
+                ),
+                const Expanded(
+                  child: _HeroMetric(
+                    icon: Icons.energy_savings_leaf_rounded,
+                    value: '—',
+                    label: 'Day Streak',
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          right: 4,
+          bottom: 62,
+          width: 220,
+          height: 220,
+          child: Image.asset(
+            'assets/images/onboarding/games_eco_bird_runner.png',
+            fit: BoxFit.contain,
+          ),
+        ),
+        Positioned.fill(
+          child: Material(
+            color: AppColors.transparent,
+            child: InkWell(onTap: onPlay),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+class _HeroMetric extends StatelessWidget {
+  const _HeroMetric({
+    required this.icon,
+    required this.value,
+    required this.label,
+  });
+  final IconData icon;
+  final String value;
+  final String label;
+  @override
+  Widget build(BuildContext context) => Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      Icon(icon, color: AppColors.white, size: 21),
+      Text(
+        value,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: AppColors.white,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: AppColors.white, fontSize: 9),
+      ),
+    ],
+  );
 }

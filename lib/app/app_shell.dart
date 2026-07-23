@@ -6,8 +6,8 @@ import '../core/services/connectivity_service.dart';
 import '../shared/providers/core_providers.dart';
 import 'theme/app_colors.dart';
 import 'theme/app_layout.dart';
-import 'theme/app_motion.dart';
 import 'theme/app_radius.dart';
+import 'theme/app_motion.dart';
 import 'theme/app_spacing.dart';
 import 'theme/app_text_styles.dart';
 
@@ -71,41 +71,35 @@ class AppShell extends ConsumerWidget {
           ),
           bottomNavigationBar: SafeArea(
             top: false,
-            minimum: const EdgeInsets.fromLTRB(
-              AppSpacing.sm,
-              0,
-              AppSpacing.sm,
-              AppSpacing.sm,
-            ),
             child: DecoratedBox(
               decoration: BoxDecoration(
                 color: scheme.surface,
-                borderRadius: AppRadius.largeBorderRadius,
-                border: Border.all(color: scheme.outlineVariant),
+                border: Border(top: BorderSide(color: scheme.outlineVariant)),
                 boxShadow: const [
                   BoxShadow(
-                    color: AppColors.cardShadow,
-                    blurRadius: 24,
-                    offset: Offset(0, 8),
+                    color: AppColors.subtleShadow,
+                    blurRadius: 18,
+                    offset: Offset(0, -4),
                   ),
                 ],
               ),
-              child: ClipRRect(
-                borderRadius: AppRadius.largeBorderRadius,
-                child: NavigationBar(
-                  selectedIndex: navigationShell.currentIndex,
-                  onDestinationSelected: _selectDestination,
-                  destinations: _destinations
-                      .map(
-                        (destination) => NavigationDestination(
-                          icon: Icon(destination.icon),
-                          selectedIcon: Icon(destination.selectedIcon),
-                          label: destination.label,
-                          tooltip: destination.label,
-                        ),
-                      )
-                      .toList(),
-                ),
+              child: NavigationBar(
+                selectedIndex: navigationShell.currentIndex,
+                onDestinationSelected: _selectDestination,
+                destinations: _destinations
+                    .map(
+                      (destination) => NavigationDestination(
+                        icon: destination.label == 'Games'
+                            ? const _GamesNavigationIcon(selected: false)
+                            : Icon(destination.icon),
+                        selectedIcon: destination.label == 'Games'
+                            ? const _GamesNavigationIcon(selected: true)
+                            : Icon(destination.selectedIcon),
+                        label: destination.label,
+                        tooltip: destination.label,
+                      ),
+                    )
+                    .toList(),
               ),
             ),
           ),
@@ -277,4 +271,41 @@ class _AppDestination {
   final String label;
   final IconData icon;
   final IconData selectedIcon;
+}
+
+class _GamesNavigationIcon extends StatelessWidget {
+  const _GamesNavigationIcon({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) => Transform.translate(
+    offset: const Offset(0, -11),
+    child: AnimatedContainer(
+      duration: AppMotion.fast,
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.primaryLight, AppColors.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        shape: BoxShape.circle,
+        boxShadow: const [
+          BoxShadow(
+            color: AppColors.cardShadow,
+            blurRadius: 14,
+            offset: Offset(0, 5),
+          ),
+        ],
+        border: Border.all(color: AppColors.white, width: 3),
+      ),
+      child: const Icon(
+        Icons.sports_esports_rounded,
+        color: AppColors.white,
+        size: 25,
+      ),
+    ),
+  );
 }

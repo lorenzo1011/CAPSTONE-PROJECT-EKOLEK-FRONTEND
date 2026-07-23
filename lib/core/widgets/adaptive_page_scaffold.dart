@@ -35,7 +35,7 @@ class AdaptivePageScaffold extends StatelessWidget {
             final content = Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: horizontalPadding,
-                vertical: AppSpacing.xl,
+                vertical: AppSpacing.lg,
               ),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(
@@ -51,7 +51,7 @@ class AdaptivePageScaffold extends StatelessWidget {
                         actions: actions,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xl),
+                    const SizedBox(height: AppSpacing.lg),
                     if (scrollable)
                       AppReveal(
                         delay: const Duration(milliseconds: 70),

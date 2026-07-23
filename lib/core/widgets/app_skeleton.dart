@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../app/theme/app_radius.dart';
 import '../../app/theme/app_motion.dart';
+import '../../app/theme/app_radius.dart';
 
 class AppSkeleton extends StatefulWidget {
   const AppSkeleton({
@@ -22,7 +22,6 @@ class AppSkeleton extends StatefulWidget {
 class _AppSkeletonState extends State<AppSkeleton>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final Animation<double> _opacity;
 
   @override
   void initState() {
@@ -31,10 +30,6 @@ class _AppSkeletonState extends State<AppSkeleton>
       vsync: this,
       duration: AppMotion.skeleton,
     );
-    _opacity = Tween<double>(
-      begin: 0.45,
-      end: 0.9,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -42,9 +37,9 @@ class _AppSkeletonState extends State<AppSkeleton>
     super.didChangeDependencies();
     if (MediaQuery.disableAnimationsOf(context)) {
       _controller.stop();
-      _controller.value = 1;
+      _controller.value = 0.5;
     } else if (!_controller.isAnimating) {
-      _controller.repeat(reverse: true);
+      _controller.repeat();
     }
   }
 
@@ -56,16 +51,34 @@ class _AppSkeletonState extends State<AppSkeleton>
 
   @override
   Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: FadeTransition(
-        opacity: _opacity,
-        child: Container(
-          width: widget.width,
-          height: widget.height,
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(widget.borderRadius),
-          ),
+    final scheme = Theme.of(context).colorScheme;
+    final base = scheme.surfaceContainerHighest;
+    final highlight = Color.alphaBlend(
+      scheme.surface.withValues(alpha: 0.7),
+      base,
+    );
+
+    return FadeTransition(
+      opacity: Tween<double>(begin: 0.8, end: 1).animate(_controller),
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            final slide = (_controller.value * 2) - 1;
+            return Container(
+              width: widget.width,
+              height: widget.height,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(widget.borderRadius),
+                gradient: LinearGradient(
+                  begin: Alignment(slide - 1.2, 0),
+                  end: Alignment(slide + 1.2, 0),
+                  colors: [base, highlight, base],
+                  stops: const [0.2, 0.5, 0.8],
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
-import '../../../app/theme/app_layout.dart';
 import '../../../app/theme/app_spacing.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
@@ -65,16 +64,15 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                 sliver: SliverList.list(
                   children: [
                     AppPageHeader(
-                      eyebrow: 'Rewards marketplace',
-                      title: 'Turn impact into value',
+                      title: 'Rewards',
                       subtitle:
-                          'Redeem verified E-KOLEK points for useful community rewards and local benefits.',
+                          'Redeem points, support local,\nand enjoy rewards.',
                       actions: [
-                        OutlinedButton.icon(
+                        IconButton(
+                          tooltip: 'Redemption history',
                           onPressed: () =>
                               context.push(AppRoutes.redemptionHistoryPath),
-                          icon: const Icon(Icons.receipt_long_outlined),
-                          label: const Text('My requests'),
+                          icon: const Icon(Icons.card_giftcard_rounded),
                         ),
                       ],
                     ),
@@ -105,6 +103,11 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
+                                  'Your Points Balance',
+                                  style: Theme.of(context).textTheme.labelLarge,
+                                ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Text(
                                   wallet == null
                                       ? 'Wallet balance unavailable'
                                       : AppFormatters.rewardPoints(
@@ -120,7 +123,7 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                                       ),
                                 ),
                                 Text(
-                                  'Available to spend · Eligibility is rechecked at checkout',
+                                  'Available to spend',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Theme.of(
@@ -131,11 +134,13 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                               ],
                             ),
                           ),
-                          IconButton(
-                            tooltip: 'Wallet activity',
-                            onPressed: () =>
-                                context.push(AppRoutes.walletActivityPath),
-                            icon: const Icon(Icons.arrow_forward_rounded),
+                          SizedBox(
+                            width: 88,
+                            height: 88,
+                            child: Image.asset(
+                              'assets/images/onboarding/learn_progress_sprout.png',
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ],
                       ),
@@ -190,6 +195,26 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                         title: Text(state.message!),
                       ),
                     const SizedBox(height: AppSpacing.md),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            'Featured Rewards',
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        Text(
+                          'See all',
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.smMd),
                   ],
                 ),
               ),
@@ -264,35 +289,33 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
         AppSpacing.md,
         AppSpacing.xxl,
       ),
-      sliver: SliverLayoutBuilder(
-        builder: (context, constraints) {
-          final width = constraints.crossAxisExtent;
-          final columns = width >= AppLayout.wideBreakpoint
-              ? 4
-              : width >= 650
-              ? 3
-              : width >= 420
-              ? 2
-              : 1;
-          return SliverGrid(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: columns,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: columns == 1 ? 1.15 : .66,
-            ),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              if (index == state.items.length) {
-                controller.loadMore();
-                return const Center(child: CircularProgressIndicator());
-              }
-              final reward = state.items[index];
-              return RewardCard(
-                reward: reward,
-                onTap: () =>
-                    context.push(AppRoutes.rewardDetailPath(reward.id)),
-              );
-            }, childCount: state.items.length + (state.hasNext ? 1 : 0)),
+      sliver: SliverList.separated(
+        itemCount: state.items.length + (state.hasNext ? 1 : 0),
+        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+        itemBuilder: (context, index) {
+          if (index == state.items.length) {
+            controller.loadMore();
+            return const Center(child: CircularProgressIndicator());
+          }
+          final reward = state.items[index];
+          final card = RewardCard(
+            reward: reward,
+            onTap: () => context.push(AppRoutes.rewardDetailPath(reward.id)),
+          );
+          if (index != 1) return card;
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: AppSpacing.md),
+              Text(
+                'More Rewards',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+              ),
+              const SizedBox(height: AppSpacing.smMd),
+              card,
+            ],
           );
         },
       ),
