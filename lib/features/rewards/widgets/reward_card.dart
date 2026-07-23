@@ -5,9 +5,15 @@ import '../models/reward_item.dart';
 import 'reward_image.dart';
 
 class RewardCard extends StatelessWidget {
-  const RewardCard({super.key, required this.reward, required this.onTap});
+  const RewardCard({
+    super.key,
+    required this.reward,
+    required this.onTap,
+    this.featured = false,
+  });
   final RewardItem reward;
   final VoidCallback onTap;
+  final bool featured;
 
   @override
   Widget build(BuildContext context) => Card(
@@ -15,12 +21,12 @@ class RewardCard extends StatelessWidget {
     child: InkWell(
       onTap: onTap,
       child: SizedBox(
-        height: 92,
+        height: featured ? 150 : 92,
         child: Row(
           children: [
             SizedBox(
-              width: 84,
-              height: 92,
+              width: featured ? 145 : 84,
+              height: featured ? 150 : 92,
               child: RewardImage(
                 name: reward.name,
                 url: reward.imageUrl,
@@ -51,7 +57,13 @@ class RewardCard extends StatelessWidget {
                 ],
               ),
             ),
-            OutlinedButton(onPressed: onTap, child: const Text('Redeem')),
+            featured
+                ? FilledButton.icon(
+                    onPressed: onTap,
+                    icon: const Icon(Icons.card_giftcard_rounded, size: 17),
+                    label: const Text('Redeem'),
+                  )
+                : OutlinedButton(onPressed: onTap, child: const Text('Redeem')),
             const SizedBox(width: AppSpacing.sm),
           ],
         ),

@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../app/app_routes.dart';
 import '../../../app/theme/app_spacing.dart';
-import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_empty_state.dart';
 import '../../../core/widgets/app_error_view.dart';
@@ -86,44 +85,68 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
                       ).colorScheme.primaryContainer,
                       child: Row(
                         children: [
-                          Container(
-                            padding: const EdgeInsets.all(AppSpacing.smMd),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.account_balance_wallet_outlined,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                          ),
-                          const SizedBox(width: AppSpacing.md),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Your Points Balance',
-                                  style: Theme.of(context).textTheme.labelLarge,
-                                ),
-                                const SizedBox(height: AppSpacing.xs),
-                                Text(
-                                  wallet == null
-                                      ? 'Wallet balance unavailable'
-                                      : AppFormatters.rewardPoints(
-                                          wallet.currentBalance,
-                                        ),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .headlineSmall
+                                  'Your Balance',
+                                  style: Theme.of(context).textTheme.labelLarge
                                       ?.copyWith(
                                         color: Theme.of(
                                           context,
-                                        ).colorScheme.onPrimaryContainer,
+                                        ).colorScheme.primary,
                                       ),
                                 ),
+                                const SizedBox(height: AppSpacing.xs),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      wallet?.currentBalance.toString() ?? '—',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .displayMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w800,
+                                            color: const Color(0xFF121C45),
+                                          ),
+                                    ),
+                                    const SizedBox(width: 7),
+                                    Container(
+                                      width: 27,
+                                      height: 27,
+                                      margin: const EdgeInsets.only(bottom: 5),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFFFFB800),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: Text(
+                                          'P',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    const Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 6,
+                                        bottom: 8,
+                                      ),
+                                      child: Text(
+                                        'points',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 Text(
-                                  'Available to spend',
+                                  'Keep collecting to unlock more!',
                                   style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Theme.of(
@@ -300,6 +323,7 @@ class _RewardsScreenState extends ConsumerState<RewardsScreen> {
           final reward = state.items[index];
           final card = RewardCard(
             reward: reward,
+            featured: index == 0,
             onTap: () => context.push(AppRoutes.rewardDetailPath(reward.id)),
           );
           if (index != 1) return card;

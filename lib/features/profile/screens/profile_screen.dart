@@ -72,9 +72,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       child: ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
-          _ProfileHeader(profile: profile),
-          const SizedBox(height: AppSpacing.smMd),
-          _ProfileStats(points: points, badges: badges),
+          _ProfileOverview(profile: profile, points: points, badges: badges),
           if (state.stale || state.message != null) ...[
             const SizedBox(height: AppSpacing.smMd),
             MaterialBanner(
@@ -128,12 +126,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           _Section(
-            title: 'Information',
+            title: '',
             children: [
               _tile(
                 Icons.help_outline,
-                'Help Center',
-                'View available support information',
+                'Help & Support',
+                'Get help and contact support',
                 AppRoutes.helpCenterPath,
               ),
               _tile(
@@ -198,10 +196,7 @@ class _ProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final image = profile.photoUrl;
-    return AppCard(
-      elevated: true,
-      backgroundColor: AppColors.primaryContainer,
-      borderColor: AppColors.primaryContainer,
+    return Padding(
       padding: const EdgeInsets.all(AppSpacing.lg),
       child: Row(
         children: [
@@ -277,6 +272,39 @@ class _ProfileHeader extends StatelessWidget {
         ? 'Unknown'
         : '${normalized[0].toUpperCase()}${normalized.substring(1)}';
   }
+}
+
+class _ProfileOverview extends StatelessWidget {
+  const _ProfileOverview({
+    required this.profile,
+    required this.points,
+    required this.badges,
+  });
+  final ResidentProfile profile;
+  final int? points;
+  final int? badges;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    decoration: BoxDecoration(
+      color: AppColors.primaryContainer,
+      borderRadius: AppRadius.largeBorderRadius,
+    ),
+    child: Column(
+      children: [
+        _ProfileHeader(profile: profile),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm,
+            0,
+            AppSpacing.sm,
+            AppSpacing.sm,
+          ),
+          child: _ProfileStats(points: points, badges: badges),
+        ),
+      ],
+    ),
+  );
 }
 
 class _ProfileStats extends StatelessWidget {
@@ -358,32 +386,31 @@ class _Section extends StatelessWidget {
   final List<Widget> children;
 
   @override
-  Widget build(BuildContext context) => AppCard(
-    padding: EdgeInsets.zero,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.md,
-            AppSpacing.sm,
-          ),
-          child: Text(
-            title.toUpperCase(),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              letterSpacing: .8,
-            ),
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      if (title.isNotEmpty) ...[
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w800,
           ),
         ),
-        for (var index = 0; index < children.length; index++) ...[
-          children[index],
-          if (index != children.length - 1)
-            const Divider(indent: 64, endIndent: AppSpacing.md),
-        ],
+        const SizedBox(height: AppSpacing.smMd),
       ],
-    ),
+      AppCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          children: [
+            for (var index = 0; index < children.length; index++) ...[
+              children[index],
+              if (index != children.length - 1)
+                const Divider(indent: 64, endIndent: AppSpacing.md),
+            ],
+          ],
+        ),
+      ),
+    ],
   );
 }
