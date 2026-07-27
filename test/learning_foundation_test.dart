@@ -1,6 +1,9 @@
+import 'package:ekolek_app/app/theme/app_theme.dart';
 import 'package:ekolek_app/core/api/api_endpoints.dart';
 import 'package:ekolek_app/features/learning/models/learning_video.dart';
 import 'package:ekolek_app/features/learning/models/video_progress.dart';
+import 'package:ekolek_app/features/learning/widgets/learning_video_card.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -87,4 +90,50 @@ void main() {
       expect(progress.isCompleted, isFalse);
     });
   });
+
+  for (final textScale in [1.0, 1.4, 2.0]) {
+    testWidgets(
+      'learning cards do not overflow with long content at ${textScale}x text',
+      (tester) async {
+        await tester.binding.setSurfaceSize(const Size(273, 600));
+        addTearDown(() => tester.binding.setSurfaceSize(null));
+        const video = LearningVideo(
+          id: 1,
+          title: 'Environmental Responsibility in the Community',
+          description:
+              'Learn practical ways to care for the environment together.',
+          category: 'Community Action',
+          pointsReward: 20,
+          requiredWatchPercentage: 90,
+        );
+
+        await tester.pumpWidget(
+          MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            builder: (context, child) => MediaQuery(
+              data: MediaQuery.of(
+                context,
+              ).copyWith(textScaler: TextScaler.linear(textScale)),
+              child: child!,
+            ),
+            home: Scaffold(
+              body: ListView(
+                padding: const EdgeInsets.all(8),
+                children: [
+                  LearningVideoCard(video: video, onTap: () {}),
+                  const SizedBox(height: 12),
+                  LearningVideoCard(video: video, featured: true, onTap: () {}),
+                ],
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(LearningVideoCard), findsNWidgets(2));
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 }
