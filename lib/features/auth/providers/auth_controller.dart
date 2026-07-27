@@ -10,6 +10,7 @@ import '../../../core/storage/resident_status_storage.dart';
 import '../models/auth_user.dart';
 import '../models/account_status_info.dart';
 import '../models/login_request.dart';
+import '../models/registration_request.dart';
 import '../services/auth_service.dart';
 import 'auth_state.dart';
 
@@ -40,6 +41,7 @@ class AuthController extends ChangeNotifier {
   AuthenticationState _state = const AuthenticationState.initial();
   Future<void>? _initialization;
   bool _loginInProgress = false;
+  bool _registrationInProgress = false;
   bool _logoutInProgress = false;
 
   AuthenticationState get state => _state;
@@ -152,6 +154,55 @@ class AuthController extends ChangeNotifier {
       return false;
     } finally {
       _loginInProgress = false;
+    }
+  }
+
+  Future<bool> register(
+    RegistrationRequest request, {
+    ValueChanged<double>? onUploadProgress,
+  }) async {
+    if (_registrationInProgress) return false;
+    _registrationInProgress = true;
+    _setState(const AuthenticationState.loading());
+    try {
+      final result = await _authService.register(
+        request,
+        onSendProgress: (sent, total) {
+          if (total > 0) onUploadProgress?.call(sent / total);
+        },
+      );
+      await _sessionManager.saveAuthenticatedSession(result.tokens);
+      final verifiedState = await _loadVerifiedUser();
+      if (verifiedState.status != AuthenticationStatus.authenticated) {
+        await _sessionManager.clearSession();
+        _setState(verifiedState);
+        return false;
+      }
+      _sessionExpiredHandler.reset();
+      _setState(verifiedState);
+      return true;
+    } on ValidationException catch (error) {
+      _setState(
+        AuthenticationState.validationError(
+          fieldErrors: error.fieldErrors,
+          message: error.fieldErrors['non_field_errors']?.firstOrNull,
+        ),
+      );
+      return false;
+    } on AppException catch (error) {
+      await _sessionManager.clearSession();
+      _setState(AuthenticationState.failure(_safeMessage(error)));
+      return false;
+    } on Object {
+      await _sessionManager.clearSession();
+      _setState(
+        const AuthenticationState.failure(
+          'E-KOLEK is temporarily unavailable. Please try again later.',
+        ),
+      );
+      return false;
+    } finally {
+      _registrationInProgress = false;
     }
   }
 

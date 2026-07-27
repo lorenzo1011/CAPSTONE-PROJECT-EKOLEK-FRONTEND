@@ -304,6 +304,25 @@ class _LoginForm extends StatelessWidget {
                     : () => context.push(AppRoutes.forgotPasswordPath),
                 child: const Text('Forgot Password?'),
               ),
+              const SizedBox(height: AppSpacing.xs),
+              Wrap(
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(
+                    'New to E-KOLEK?',
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: disabled
+                        ? null
+                        : () => context.push(AppRoutes.signupPath),
+                    child: const Text('Create account'),
+                  ),
+                ],
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

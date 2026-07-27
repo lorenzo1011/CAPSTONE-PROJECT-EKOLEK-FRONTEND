@@ -14,7 +14,7 @@ class AppConfig {
 
   factory AppConfig({
     String environment = 'development',
-    String apiBaseUrl = 'http://192.168.1.11:8000/api/',
+    String apiBaseUrl = 'http://192.168.1.5:8000/api/',
     Duration connectTimeout = const Duration(seconds: 15),
     Duration receiveTimeout = const Duration(seconds: 20),
     Duration sendTimeout = const Duration(seconds: 20),
@@ -104,7 +104,7 @@ class AppConfig {
       ),
       apiBaseUrl: const String.fromEnvironment(
         'API_BASE_URL',
-        defaultValue: 'http://192.168.1.11:8000/api/',
+        defaultValue: 'http://192.168.1.5:8000/api/',
       ),
       connectTimeout: Duration(
         seconds: const int.fromEnvironment(

@@ -3,6 +3,7 @@ class AppRoutes {
 
   static const String splash = 'splash';
   static const String login = 'login';
+  static const String signup = 'signup';
   static const String accountStatus = 'account-status';
   static const String approvedWelcome = 'approved-welcome';
   static const String forgotPassword = 'forgot-password';
@@ -47,6 +48,7 @@ class AppRoutes {
 
   static const String splashPath = '/';
   static const String loginPath = '/login';
+  static const String signupPath = '/signup';
   static const String accountStatusPath = '/account-status';
   static const String approvedWelcomePath = '/approved-welcome';
   static const String forgotPasswordPath = '/forgot-password';

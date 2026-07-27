@@ -6,8 +6,10 @@ class ApiEndpoints {
   static const String mobile = 'mobile/';
 
   static const String login = '${auth}login/';
+  static const String register = '${auth}register/';
   static const String refresh = '${auth}token/refresh/';
   static const String currentUser = '${auth}me/';
+  static const String activeBarangays = 'barangays/active/';
   static const String profile = '${mobile}profile/';
   static const String passwordResetRequest = '${auth}password-reset/request/';
   static const String passwordResetVerify = '${auth}password-reset/verify/';

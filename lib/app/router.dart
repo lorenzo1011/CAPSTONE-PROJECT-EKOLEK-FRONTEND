@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../core/widgets/route_error_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/signup_screen.dart';
 import '../features/auth/screens/account_status_screen.dart';
 import '../features/auth/providers/auth_controller.dart';
 import '../features/auth/providers/auth_state.dart';
@@ -73,6 +74,7 @@ GoRouter createAppRouter({
       final location = state.matchedLocation;
       final onSplash = location == AppRoutes.splashPath;
       final onLogin = location == AppRoutes.loginPath;
+      final onSignup = location == AppRoutes.signupPath;
       final onPublicPasswordFlow =
           location == AppRoutes.forgotPasswordPath ||
           location == AppRoutes.passwordResetVerifyPath ||
@@ -84,12 +86,14 @@ GoRouter createAppRouter({
         return onSplash ? null : AppRoutes.splashPath;
       }
       if (authState.status == AuthenticationStatus.loading) {
-        if (onLogin) return null;
+        if (onLogin || onSignup) return null;
         return onSplash ? null : AppRoutes.splashPath;
       }
       if (authState.status != AuthenticationStatus.authenticated ||
           authState.user == null) {
-        return (onLogin || onPublicPasswordFlow) ? null : AppRoutes.loginPath;
+        return (onLogin || onSignup || onPublicPasswordFlow)
+            ? null
+            : AppRoutes.loginPath;
       }
 
       final user = authState.user!;
@@ -116,6 +120,12 @@ GoRouter createAppRouter({
         name: AppRoutes.login,
         pageBuilder: (context, state) =>
             _fadePage(state: state, child: const LoginScreen()),
+      ),
+      GoRoute(
+        path: AppRoutes.signupPath,
+        name: AppRoutes.signup,
+        pageBuilder: (context, state) =>
+            _fadePage(state: state, child: const SignupScreen()),
       ),
       GoRoute(
         path: AppRoutes.accountStatusPath,
