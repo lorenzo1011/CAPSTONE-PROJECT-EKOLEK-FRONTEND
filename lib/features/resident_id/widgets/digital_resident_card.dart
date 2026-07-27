@@ -8,9 +8,14 @@ import '../models/digital_resident_id.dart';
 import '../models/resident_id_status.dart';
 
 class DigitalResidentCard extends StatefulWidget {
-  const DigitalResidentCard({super.key, required this.id});
+  const DigitalResidentCard({
+    super.key,
+    required this.id,
+    this.qrVerifiedOnline = true,
+  });
 
   final DigitalResidentId id;
+  final bool qrVerifiedOnline;
 
   @override
   State<DigitalResidentCard> createState() => _DigitalResidentCardState();
@@ -86,26 +91,46 @@ class _DigitalResidentCardState extends State<DigitalResidentCard> {
             ),
           ),
           const SizedBox(height: 12),
-          RepaintBoundary(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 360),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) => FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: Tween<double>(begin: .975, end: 1).animate(animation),
-                  child: child,
+          _OfficialPreviewStage(
+            child: RepaintBoundary(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 360),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) => FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(
+                      begin: .975,
+                      end: 1,
+                    ).animate(animation),
+                    child: child,
+                  ),
                 ),
-              ),
-              child: AspectRatio(
-                key: ValueKey(_showBack),
-                aspectRatio: 1011 / 639,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: _showBack
-                      ? const _OfficialCardBack()
-                      : _OfficialCardFront(id: id),
+                child: AspectRatio(
+                  key: ValueKey(_showBack),
+                  aspectRatio: 1011 / 639,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x30052D1B),
+                          blurRadius: 28,
+                          offset: Offset(0, 13),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(18),
+                      child: _showBack
+                          ? const _OfficialCardBack()
+                          : _OfficialCardFront(
+                              id: id,
+                              qrVerifiedOnline: widget.qrVerifiedOnline,
+                            ),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -136,17 +161,80 @@ class _DigitalResidentCardState extends State<DigitalResidentCard> {
   }
 }
 
+class _OfficialPreviewStage extends StatelessWidget {
+  const _OfficialPreviewStage({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final padding = constraints.maxWidth >= 600 ? 32.0 : 12.0;
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(22),
+          child: Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: const Color(0xFFDCE9E1)),
+              borderRadius: BorderRadius.circular(22),
+              gradient: const RadialGradient(
+                center: Alignment(-.75, -.8),
+                radius: 1.25,
+                colors: [
+                  Color(0xFFDFF3D6),
+                  Color(0xFFF7FBF8),
+                  Color(0xFFE7F0EA),
+                ],
+                stops: [0, .42, 1],
+              ),
+            ),
+            child: CustomPaint(
+              painter: const _PreviewGridPainter(),
+              child: Padding(padding: EdgeInsets.all(padding), child: child),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _PreviewGridPainter extends CustomPainter {
+  const _PreviewGridPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0x0D0B5A34)
+      ..strokeWidth = .7;
+    const step = 32.0;
+    for (var x = 0.0; x <= size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+    }
+    for (var y = 0.0; y <= size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _PreviewGridPainter oldDelegate) => false;
+}
+
 class _OfficialCardFront extends StatelessWidget {
-  const _OfficialCardFront({required this.id});
+  const _OfficialCardFront({required this.id, required this.qrVerifiedOnline});
 
   final DigitalResidentId id;
+  final bool qrVerifiedOnline;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
         final u = w / 100;
+        final qrUsable = id.canDisplayQr && qrVerifiedOnline;
         return DecoratedBox(
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -168,7 +256,7 @@ class _OfficialCardFront extends StatelessWidget {
             clipBehavior: Clip.hardEdge,
             children: [
               Positioned(
-                top: w * .212,
+                top: h * .212,
                 left: w * .354,
                 width: w * .555,
                 child: Column(
@@ -200,17 +288,17 @@ class _OfficialCardFront extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: w * .333,
+                top: h * .333,
                 left: w * .0825,
                 width: w * .2065,
-                height: w * .211,
+                height: h * .334,
                 child: _ResidentPhoto(url: id.profilePhotoUrl),
               ),
               Positioned(
-                top: w * .313,
+                top: h * .313,
                 left: w * .363,
                 width: w * .53,
-                height: w * .064,
+                height: h * .101,
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: u * 2.1),
                   child: FittedBox(
@@ -245,45 +333,50 @@ class _OfficialCardFront extends StatelessWidget {
                 emphasized: true,
                 unit: u,
                 cardWidth: w,
+                cardHeight: h,
               ),
               _PositionedField(
                 left: .362,
-                top: .565,
+                top: .549,
                 width: .39,
                 label: 'Barangay',
                 value: id.barangayName,
                 unit: u,
                 cardWidth: w,
+                cardHeight: h,
               ),
               _PositionedField(
                 left: .362,
-                top: .675,
+                top: .643,
                 width: .18,
                 label: 'ID Card Number',
                 value: id.cardNumber ?? 'Pending',
                 unit: u,
                 cardWidth: w,
+                cardHeight: h,
               ),
               _PositionedField(
                 left: .565,
-                top: .675,
+                top: .643,
                 width: .19,
                 label: 'Date Issued',
                 value: _date(id.cardIssuedAt),
                 unit: u,
                 cardWidth: w,
+                cardHeight: h,
               ),
               _PositionedField(
                 left: .362,
-                top: .785,
+                top: .737,
                 width: .39,
                 label: 'Valid Until',
                 value: _date(id.cardExpiryDate),
                 unit: u,
                 cardWidth: w,
+                cardHeight: h,
               ),
               Positioned(
-                top: w * .488,
+                top: h * .488,
                 left: w * .763,
                 width: w * .185,
                 child: Column(
@@ -307,7 +400,7 @@ class _OfficialCardFront extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: id.canDisplayQr
+                      child: qrUsable
                           ? QrImageView(
                               data: id.qrPayload!,
                               padding: EdgeInsets.zero,
@@ -324,7 +417,7 @@ class _OfficialCardFront extends StatelessWidget {
                     ),
                     SizedBox(height: u * .75),
                     Text(
-                      id.canDisplayQr ? 'SCAN TO VERIFY' : 'QR UNAVAILABLE',
+                      qrUsable ? 'SCAN TO VERIFY' : 'QR UNAVAILABLE',
                       maxLines: 1,
                       style: TextStyle(
                         color: const Color(0xFF084326),
@@ -337,7 +430,7 @@ class _OfficialCardFront extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: w * .773,
+                top: h * .773,
                 left: w * .0825,
                 width: w * .2065,
                 child: Column(
@@ -361,7 +454,7 @@ class _OfficialCardFront extends StatelessWidget {
               ),
               Positioned(
                 left: w * .358,
-                bottom: w * .051,
+                bottom: h * .051,
                 child: Text(
                   'OFFICIAL RESIDENT IDENTIFICATION CARD',
                   style: TextStyle(
@@ -377,7 +470,7 @@ class _OfficialCardFront extends StatelessWidget {
               ),
               Positioned(
                 right: w * .062,
-                bottom: w * .0425,
+                bottom: h * .0425,
                 child: Row(
                   children: [
                     _MiniLogo(
@@ -413,6 +506,7 @@ class _OfficialCardBack extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final w = constraints.maxWidth;
+        final h = constraints.maxHeight;
         final u = w / 100;
         return DecoratedBox(
           decoration: const BoxDecoration(
@@ -427,7 +521,7 @@ class _OfficialCardBack extends StatelessWidget {
           child: Stack(
             children: [
               Positioned(
-                top: w * .183,
+                top: h * .183,
                 left: w * .23,
                 width: w * .54,
                 child: Column(
@@ -476,7 +570,7 @@ class _OfficialCardBack extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: w * .345,
+                top: h * .345,
                 left: w * .066,
                 width: w * .62,
                 child: Row(
@@ -489,10 +583,10 @@ class _OfficialCardBack extends StatelessWidget {
                         number: '01',
                         title: 'Terms and Conditions',
                         lines: const [
-                          'Issued only to a registered E-KOLEK resident of San Pedro City.',
-                          'This card remains the property of CENRO San Pedro City.',
-                          'Use only for official collections, points and rewards.',
-                          'Tampering or unauthorized use may cancel this card.',
+                          'This card is issued only to a registered E-KOLEK resident of San Pedro City.',
+                          'The card remains the property of CENRO San Pedro City and must be surrendered when requested.',
+                          'Use this card only for official E-KOLEK collections, points crediting and reward redemption.',
+                          'Tampering, duplication or unauthorized use may result in suspension or cancellation.',
                         ],
                       ),
                     ),
@@ -511,8 +605,8 @@ class _OfficialCardBack extends StatelessWidget {
                         title: 'Resident Responsibilities',
                         lines: const [
                           'Present this card during official E-KOLEK transactions.',
-                          'Allow authorized personnel to scan the QR for verification.',
-                          'Keep this card secure and never lend or transfer it.',
+                          'Allow authorized personnel to scan the QR code for verification.',
+                          'Keep the card secure and do not lend or transfer it to another person.',
                         ],
                       ),
                     ),
@@ -520,7 +614,7 @@ class _OfficialCardBack extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: w * .345,
+                top: h * .345,
                 right: w * .058,
                 width: w * .23,
                 child: Column(
@@ -530,7 +624,7 @@ class _OfficialCardBack extends StatelessWidget {
                       label: 'Digital Verification',
                       title: 'Scan Before Accepting',
                       text:
-                          'Accept only when the verified resident status is ACTIVE and matches the cardholder.',
+                          'Scan the QR code on the front of the card. Accept this ID only when the displayed resident status is ACTIVE and the information matches the cardholder.',
                       showStatus: true,
                     ),
                     SizedBox(height: u * 2.2),
@@ -539,13 +633,13 @@ class _OfficialCardBack extends StatelessWidget {
                       label: 'Security Reminder',
                       title: 'Non-Transferable',
                       text:
-                          'This card must only be used by the registered resident.',
+                          'The card must only be used by the registered resident whose information appears in the verification system.',
                     ),
                   ],
                 ),
               ),
               Positioned(
-                top: w * .685,
+                top: h * .685,
                 left: w * .066,
                 width: w * .62,
                 child: Container(
@@ -580,7 +674,7 @@ class _OfficialCardBack extends StatelessWidget {
                       ),
                       SizedBox(height: u * .55),
                       Text(
-                        'Report lost, stolen or damaged cards immediately to CENRO for deactivation and replacement.',
+                        'If found, return this card to CENRO San Pedro City or an authorized E-KOLEK collection point. Lost, stolen or damaged cards must be reported immediately for deactivation and replacement.',
                         maxLines: 2,
                         style: TextStyle(
                           color: const Color(0xFF504832),
@@ -594,7 +688,7 @@ class _OfficialCardBack extends StatelessWidget {
                 ),
               ),
               Positioned(
-                top: w * .785,
+                top: h * .785,
                 left: w * .066,
                 width: w * .59,
                 child: Column(
@@ -611,7 +705,7 @@ class _OfficialCardBack extends StatelessWidget {
                     ),
                     SizedBox(height: u * .35),
                     Text(
-                      'Contact CENRO through the official City of San Pedro channels.',
+                      'CENRO San Pedro City - Official Phone Number - Official Email Address',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -653,6 +747,7 @@ class _PositionedField extends StatelessWidget {
     required this.value,
     required this.unit,
     required this.cardWidth,
+    required this.cardHeight,
     this.emphasized = false,
   });
 
@@ -663,13 +758,14 @@ class _PositionedField extends StatelessWidget {
   final String value;
   final double unit;
   final double cardWidth;
+  final double cardHeight;
   final bool emphasized;
 
   @override
   Widget build(BuildContext context) {
     return Positioned(
       left: cardWidth * left,
-      top: cardWidth * top,
+      top: cardHeight * top,
       width: cardWidth * width,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

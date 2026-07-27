@@ -8,6 +8,7 @@ import 'package:ekolek_app/features/resident_id/widgets/secure_qr_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 Map<String, Object?> contract({
   String status = 'ACTIVE',
@@ -71,9 +72,31 @@ void main() {
       ),
     );
     expect(find.text('opaque-backend-secret'), findsNothing);
+    final qr = tester.widget<QrImageView>(find.byType(QrImageView));
+    expect(qr.errorCorrectionLevel, QrErrorCorrectLevel.M);
+    expect(qr.embeddedImage, isNull);
     final semantics = tester.getSemantics(find.byType(SecureQrCard));
     expect(semantics.label, isNot(contains('opaque-backend-secret')));
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('unverified offline state never presents a stale QR', (
+    tester,
+  ) async {
+    final id = DigitalResidentId.fromJson(contract());
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: SecureQrCard(id: id, verifiedOnline: false)),
+      ),
+    );
+    expect(find.byType(QrImageView), findsNothing);
+    expect(
+      find.text(
+        'Reconnect and verify this ID with E-KOLEK before presenting its QR.',
+      ),
+      findsWidgets,
+    );
+    expect(find.text('opaque-backend-secret'), findsNothing);
   });
 
   testWidgets('inactive QR shows an unavailable state', (tester) async {

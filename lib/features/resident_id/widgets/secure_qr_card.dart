@@ -14,6 +14,7 @@ class SecureQrCard extends StatelessWidget {
     this.lastVerified,
     this.isRefreshing = false,
     this.compact = false,
+    this.verifiedOnline = true,
   });
 
   final DigitalResidentId id;
@@ -22,15 +23,19 @@ class SecureQrCard extends StatelessWidget {
   final DateTime? lastVerified;
   final bool isRefreshing;
   final bool compact;
+  final bool verifiedOnline;
 
   @override
   Widget build(BuildContext context) {
-    final usable = id.canDisplayQr;
+    final usable = id.canDisplayQr && verifiedOnline;
+    final unavailableReason = verifiedOnline
+        ? id.qrUnavailableReason
+        : 'Reconnect and verify this ID with E-KOLEK before presenting its QR.';
     return Semantics(
       container: true,
       label: usable
           ? 'Active secure resident QR code for authorized E-KOLEK scanning.'
-          : 'Secure resident QR code unavailable. ${id.qrUnavailableReason}',
+          : 'Secure resident QR code unavailable. $unavailableReason',
       child: Card(
         clipBehavior: Clip.antiAlias,
         elevation: 0,
@@ -122,7 +127,7 @@ class SecureQrCard extends StatelessWidget {
                           )
                         : _UnavailableQr(
                             key: const ValueKey('unavailable'),
-                            reason: id.qrUnavailableReason,
+                            reason: unavailableReason,
                           ),
                   ),
                   const SizedBox(height: 16),
@@ -174,7 +179,7 @@ class SecureQrCard extends StatelessWidget {
                           child: Text(
                             usable
                                 ? 'Show only to authorized E-KOLEK personnel. The private verification value is never shown as text.'
-                                : id.qrUnavailableReason,
+                                : unavailableReason,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: AppColors.textSecondary,
@@ -249,61 +254,40 @@ class _QrCode extends StatelessWidget {
             : maxSize;
         final size = available.clamp(0.0, maxSize);
         return Center(
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: size,
-                height: size,
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFF0B5A34), width: 2),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x1F052D1B),
-                      blurRadius: 22,
-                      offset: Offset(0, 9),
-                    ),
-                  ],
+          child: Container(
+            width: size,
+            height: size,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF0B5A34), width: 2),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x1F052D1B),
+                  blurRadius: 22,
+                  offset: Offset(0, 9),
                 ),
-                child: ExcludeSemantics(
-                  child: QrImageView(
-                    data: payload,
-                    version: QrVersions.auto,
-                    errorCorrectionLevel: QrErrorCorrectLevel.Q,
-                    padding: const EdgeInsets.all(8),
-                    gapless: true,
-                    backgroundColor: Colors.white,
-                    eyeStyle: const QrEyeStyle(
-                      color: Color(0xFF081C13),
-                      eyeShape: QrEyeShape.square,
-                    ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      color: Color(0xFF081C13),
-                      dataModuleShape: QrDataModuleShape.square,
-                    ),
-                  ),
+              ],
+            ),
+            child: ExcludeSemantics(
+              child: QrImageView(
+                data: payload,
+                version: QrVersions.auto,
+                errorCorrectionLevel: QrErrorCorrectLevel.M,
+                padding: const EdgeInsets.all(8),
+                gapless: true,
+                backgroundColor: Colors.white,
+                eyeStyle: const QrEyeStyle(
+                  color: Color(0xFF081C13),
+                  eyeShape: QrEyeShape.square,
+                ),
+                dataModuleStyle: const QrDataModuleStyle(
+                  color: Color(0xFF081C13),
+                  dataModuleShape: QrDataModuleShape.square,
                 ),
               ),
-              IgnorePointer(
-                child: Container(
-                  width: 42,
-                  height: 42,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0B5A34),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white, width: 4),
-                  ),
-                  child: const Icon(
-                    Icons.eco_rounded,
-                    color: Colors.white,
-                    size: 22,
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },

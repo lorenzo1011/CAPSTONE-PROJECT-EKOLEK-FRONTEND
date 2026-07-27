@@ -130,6 +130,7 @@ class _FullScreenQrScreenState extends ConsumerState<FullScreenQrScreen>
                                   lastVerified: state.isStale
                                       ? null
                                       : state.lastUpdated,
+                                  verifiedOnline: !state.isStale,
                                   onRefresh: _verifyWithBackend,
                                 ),
                               ],

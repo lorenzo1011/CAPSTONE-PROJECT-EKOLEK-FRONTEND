@@ -140,7 +140,7 @@ class _DigitalIdScreenState extends ConsumerState<DigitalIdScreen> {
           const LinearProgressIndicator(minHeight: 3, color: Color(0xFF0B5A34)),
           const SizedBox(height: 12),
         ],
-        DigitalResidentCard(id: id),
+        DigitalResidentCard(id: id, qrVerifiedOnline: !state.isStale),
         const SizedBox(height: 24),
         _SectionHeading(
           title: 'Present your secure QR',
@@ -153,8 +153,9 @@ class _DigitalIdScreenState extends ConsumerState<DigitalIdScreen> {
           id: id,
           isRefreshing: refreshing,
           lastVerified: state.isStale ? null : state.lastUpdated,
+          verifiedOnline: !state.isStale,
           onRefresh: refresh,
-          onExpand: id.canDisplayQr
+          onExpand: id.canDisplayQr && !state.isStale
               ? () => context.push(AppRoutes.residentIdQrPath)
               : null,
         ),
