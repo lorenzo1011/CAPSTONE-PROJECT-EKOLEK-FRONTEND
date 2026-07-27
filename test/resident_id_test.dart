@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:ekolek_app/core/api/api_endpoints.dart';
 import 'package:ekolek_app/features/resident_id/models/digital_resident_id.dart';
 import 'package:ekolek_app/features/resident_id/models/resident_id_status.dart';
+import 'package:ekolek_app/features/resident_id/widgets/digital_resident_card.dart';
 import 'package:ekolek_app/features/resident_id/widgets/secure_qr_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Map<String, Object?> contract({
@@ -81,14 +85,79 @@ void main() {
         home: Scaffold(body: SecureQrCard(id: id)),
       ),
     );
+    expect(find.text('Secure QR unavailable'), findsOneWidget);
     expect(
-      find.text('Your secure QR code is currently unavailable.'),
-      findsOneWidget,
+      find.text('No active verification QR is available for this ID.'),
+      findsWidgets,
     );
   });
 
-  // Contract/security coverage below brings this feature suite to exactly 55
-  // cases without performing any external request.
+  test('past backend expiry disables an otherwise active QR', () {
+    final id = DigitalResidentId.fromJson({
+      ...contract(),
+      'id_card_expiry_date': '2020-01-01',
+    });
+    expect(id.status, ResidentIdStatus.expired);
+    expect(id.isExpired, isTrue);
+    expect(id.canDisplayQr, isFalse);
+    expect(id.qrUnavailableReason, contains('expired'));
+  });
+
+  for (final size in const [300.0, 360.0, 430.0, 760.0]) {
+    testWidgets('official admin-style ID remains overflow-free at $size', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(Size(size, 800));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+      await tester.pumpWidget(
+        DefaultAssetBundle(
+          bundle: _TestImageBundle(),
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: DigitalResidentCard(
+                    id: DigitalResidentId.fromJson(contract()),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('Official ID Preview'), findsOneWidget);
+      expect(find.text('Front'), findsOneWidget);
+      expect(find.text('Back'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+  }
+
+  testWidgets('official ID can switch to its backend-matching back design', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      DefaultAssetBundle(
+        bundle: _TestImageBundle(),
+        child: MaterialApp(
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: DigitalResidentCard(
+                id: DigitalResidentId.fromJson(contract()),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('OFFICIAL TERMS AND RESIDENT GUIDELINES'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  // Contract/security coverage below performs no external request.
   final endpointCases = <String, Matcher>{
     'uses verified resident endpoint': equals('mobile/digital-id/'),
     'does not use admin endpoint': isNot(contains('admin')),
@@ -176,5 +245,20 @@ void main() {
       expect(id.residentId, isNot(secret));
       expect(ApiEndpoints.digitalResidentId, isNot(contains(secret)));
     });
+  }
+}
+
+class _TestImageBundle extends CachingAssetBundle {
+  static final Uint8List _transparentPng = base64Decode(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk'
+    '+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+  );
+
+  @override
+  Future<ByteData> load(String key) async {
+    if (key.endsWith('.png')) {
+      return ByteData.sublistView(_transparentPng);
+    }
+    return rootBundle.load(key);
   }
 }
